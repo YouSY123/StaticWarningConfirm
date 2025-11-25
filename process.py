@@ -26,7 +26,7 @@ class StaticAnalysisWarningsConfirmation:
         self.root_dir = root_dir
         self.make_cmd = make_cmd
         self.sar = static_analysis_result
-        self.agent_tools = AgentTools(src_path=root_dir, database_path=database_path, build_command=make_cmd, result_dir=codeql_result_dir)
+        self.agent_tools = AgentTools(src_path=root_dir, database_path=database_path, build_command=make_cmd, tempfile_dir=codeql_result_dir)
         self.cmd_tool = FunctionTool(func=self.agent_tools.run_cmd, name='cmd_tool', description='Use cmd with this tool.')
         self.condition_generator = create_condition_generator([self.cmd_tool])
 
@@ -116,23 +116,46 @@ class StaticAnalysisWarningsConfirmation:
                         confirmation = warning["Confirmation conditions"][c]
                         new_prompt_json = deepcopy(warning)
                         new_prompt_json["Confirmation conditions"] = confirmation
+                        new_prompt_json['Project path'] = self.root_dir
+                        print(new_prompt_json)
                         judger_prompt.append(json.dumps(new_prompt_json))
                 else:
                     print('Wrong format of conditions')
+                    return
         else:
             print('Wrong format of conditions')
             return
 
         # send prompts to agents by asyncio
         judge_tasks = [self.judge_conditions(json_info, [self.cmd_tool]) for json_info in judger_prompt]
-        results = await asyncio.gather(*judge_tasks)
-        
-        print_client_log('Final Result', str(results))
+        llm_results = await asyncio.gather(*judge_tasks)
+        result = []
+        result_ptr = 0
+        for w in conditions_json['Warning information']:
+            warning = conditions_json['Warning information'][w]
+            warning_result = {}
+            for index_condition, c in enumerate(warning["Confirmation conditions"]):
+                warning_result[str(index_condition+1)] = llm_results[result_ptr]
+                result_ptr += 1
+            result.append(warning_result)
+
+        print_client_log('Final Result', f'''\
+conditions:
+{str(conditions_json)}
+results:       
+{str(result)}
+        ''')
 
 
 
 if __name__ == '__main__':
-    dir = '/home/shuyang/Project/SAConfirm/test'
+    # dir: project root directory 最好是本地绝对路径
+    # command: project build command
+    # result: result of the static analysis
+    # db_path: the path to save the database of CodeQL   目前还没有使用CodeQL的工具函数
+    # codeql_result_dir: the path to save the result files of CodeQL
+
+    dir = '' 
     command = 'g++ test.cpp -o test'
     result = '''
     Checking test.cpp ...
@@ -145,5 +168,6 @@ if __name__ == '__main__':
     '''
     db_path = 'test/database_test'
     codeql_result_dir = 'CodeQL/'
-    sawc = StaticAnalysisWarningsConfirmation(dir, command, result, db_path, codeql_result_dir)
+
+    sawc = StaticAnalysisWarningsConfirmation(root_dir=dir, make_cmd=command, static_analysis_result=result, database_path=db_path, codeql_result_dir=codeql_result_dir)
     asyncio.run(sawc.start())

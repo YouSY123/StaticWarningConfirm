@@ -1,0 +1,2 @@
+| freeOperation | location | function_location |
++---------------+----------+-------------------+

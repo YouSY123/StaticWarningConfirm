@@ -1,9 +1,9 @@
 # The default llm model used by the project
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 default_client = OpenAIChatCompletionClient(
-    model = 'deepseek-chat',
-    api_key = 'sk-e3568e454ff64dd98914585f90f7dd12',
-    base_url = 'https://api.deepseek.com',
+    model = '',
+    api_key = '',
+    base_url = '',
     model_info = {
         'vision': False,
         'function_calling': True,
