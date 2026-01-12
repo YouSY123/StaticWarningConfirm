@@ -1,2 +1,0 @@
-| freeCall | location | function_location |
-+----------+----------+-------------------+

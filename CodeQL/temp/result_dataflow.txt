@@ -1,2 +1,0 @@
-| source | source_location | source_function | sink | sink_location | sink_function |
-+--------+-----------------+-----------------+------+---------------+---------------+

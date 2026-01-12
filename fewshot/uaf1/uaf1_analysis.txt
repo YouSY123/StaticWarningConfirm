@@ -1,0 +1,57 @@
+First we search for the position of the warning: In function "void releaseBuffer(int id)", "buffers[i]->id == id" uses freed memory. buffers[i] uses freed memory.
+
+Then we search for the callee of the function. "void releaseBuffer(int id)" is called in "main()" only once in the project. In "main()", the related code: 
+104     BufferPool pool(5);
+105     int bufId = pool.allocateBuffer(1024);
+106     pool.processBuffer(bufId);
+107     pool.releaseBuffer(bufId);
+
+1. BufferPool(int cap)
+Allocate buffers and set all buffers[i] to NULL
+
+2. pool.allocateBuffer(1024);
+Allocate one of the buffers[i]
+
+3. pool.processBuffer(bufId);
+We can find delete operation here:
+84                        delete target;
+In the following code, target may points to one of buffers[i]:
+66            for (int i = 0; i < capacity; i++) {
+67                if (buffers[i] && buffers[i]->id == id) {
+68                    target = buffers[i];
+69                    break;
+70                }
+71            }
+If "target=buffers[i]" and "delete target" are both executed, then one of buffers[i] is delete. Then buffers[i] becomes a dangling pointer. 
+
+4. pool.releaseBuffer(bufId);
+The warning points to:
+52                 if (buffers[i] && buffers[i]->id == id)
+If delete and use can be executed in order and the used pointer points to the same memory as the deleted pointer , the warning is true positive. Otherwise, it is false positive. 
+
+Finally, we give the conditions:
+
+```json
+{
+  "Files": [
+    "uaf1.cpp"
+  ],
+  "Warning information":
+  {
+    "1":
+    {
+      "File name": "uaf1.cpp",
+      "Type": "Use after free",
+      "Variable name": "buffers[i] (dereferenced as buffers[i]->id)",
+      "Line number": 52,
+      "Confirmation conditions": {
+        "1": "Exist an execution path satisfying: 
+              (1)successfully execute path: uaf1.cpp:68:target = buffers[i]; -> uaf1.cpp:84:delete target; -> uaf1.cpp:52:if (buffers[i] && buffers[i]->id == id)   
+              (2)In this path, uaf1.cpp:84:target points to the same memory as uaf1.cpp:52:buffers[i]
+              (3)If above are satisfied, no allocation to the pointer is executed between delete and use 
+             "
+      }
+    }
+  }
+}
+```

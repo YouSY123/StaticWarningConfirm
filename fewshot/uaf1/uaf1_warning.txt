@@ -1,0 +1,3 @@
+line 52:35: warning: Use of memory after it is freed [cplusplus.NewDelete]
+   52 |                 if (buffers[i] && buffers[i]->id == id) {
+      |                                   ^~~~~~~~~~~~~~

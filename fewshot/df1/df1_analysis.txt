@@ -1,0 +1,39 @@
+The warning points to the delete operation in line 34 in function processList.
+
+First we analyze the call relation of function processList(Node* head, bool flag): main() -> createAndProcess() -> processList(Node* head, bool flag). It is called only once in the project.
+
+Then we analyze what is actually deleted. Calling "delete toDelete" means calling "~Node()" in class "Node", for the type of "toDelete" is "Node". Therefore, the code actually delete toDelete->value.
+
+The warning type given by the static analyzer is double free, so there must be one or more delete operation before line 34. We find:
+(1) line26: delete current->value
+(2) line29: toDelete = current
+(3) line34: delete toDelete
+When executing line34, if "toDelete" still points to the same memory as "current" and both "delete current->value" and "delete toDelete" are successfully executed in one iteration in the "while" loop, double free will happen.
+
+In conclusion, we need to confirm conditions:
+
+```json
+{
+  "Files": [
+    "df1.cpp"
+  ],
+  "Warning information":
+  {
+    "1":
+    {
+      "File name": "df1.cpp",
+      "Type": "double free",
+      "Variable name": "toDelete",
+      "Line number": 34,
+      "Confirmation conditions": {
+        "1": "When executing df1.cpp:34:"delete toDelete", the code actually free the memory of "toDelete->value""
+        "2": "There exists one iteration in df1.cpp:24:"while(current != nullptr)" in which:
+              (1) df1.cpp:29:"toDelete = current;" and df1.cpp:34:"delete toDelete;" are both successfully executed
+              (2) "current" and "toDelete" always point to the same memory after df1.cpp:29:"toDelete = current;"
+              (3) between df1.cpp:29:"toDelete = current;" and df1.cpp:34:"delete toDelete;", current->value is not reallocated
+              "
+      }
+    }
+  }
+}
+```

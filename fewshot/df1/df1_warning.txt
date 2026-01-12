@@ -1,0 +1,3 @@
+line34:20: warning: Attempt to delete released memory [cplusplus.NewDelete]
+   34 |             delete toDelete;
+      |                    ^

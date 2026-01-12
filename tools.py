@@ -1,29 +1,33 @@
 import subprocess
 import os
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 import json
+import platform
 
 
 class AgentTools:
     def __init__(self, src_path:str, database_path:str, build_command:str, tempfile_dir:str, language:str = 'c-cpp'):
+        
+        self.system = platform.system()
+        
         self.database_path = database_path
         self.src_path = src_path
         self.build_command = build_command
         self.language = language
         self.result_dir = tempfile_dir+'temp/'
         self.query_file_dir = tempfile_dir+'query/'
-        if not os.path.exists(self.query_file_dir):
-            os.mkdir(self.query_file_dir)
-        if not os.path.exists(self.result_dir):
-            os.mkdir(self.result_dir)
+        # if not os.path.exists(self.query_file_dir):
+        #     os.mkdir(self.query_file_dir)
+        # if not os.path.exists(self.result_dir):
+        #     os.mkdir(self.result_dir)
     
 
-    def run_cmd(self, cmd: List[str], cwd: Optional[str] = None, timeout: int = 300) -> Dict[str, Any]:
+    def run_cmd(self, cmd: str, cwd: Optional[str] = None, timeout: int = 300) -> Dict[str, Any]:
         '''
         A tool for the agents to run command.
         '''
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, timeout=timeout)
+            proc = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, timeout=timeout, shell=True)
             return {"returncode": proc.returncode, "stdout": proc.stdout or "", "stderr": proc.stderr or ""}
         except subprocess.TimeoutExpired:
             return {"returncode": None, "stdout": "", "stderr": f"timeout after {timeout}s"}
@@ -34,6 +38,43 @@ class AgentTools:
         except Exception as e:
             return {"returncode": None, "stdout": "", "stderr": f"unhandled exception: {str(e)}"}
         
+
+    def list_files(self):
+        '''
+        List file structure in the src directory
+        '''
+        if self.system == 'Linux':
+            return (self.run_cmd(cmd ='ls -R', cwd=self.src_path))['stdout']
+        else:
+            print('Only Linux currently')
+            exit(1)
+    
+
+    def view_one_file(self, file_path:str, start_line:int = 1, end_line:Union[int, str] = '\\$'):
+        '''
+        View a file in the src directory
+        file_path: the path of file you want to view
+        start_line: the line number to start viewing
+        end_line: the line number to end viewing
+        '''
+        if self.system == 'Linux':
+            return (self.run_cmd(cmd = f'cat -n {file_path} | sed -n \"{start_line},{end_line}p\"', cwd=self.src_path))['stdout']
+        else:
+            print('Only Linux currently')
+            exit(1)
+
+    def grep_in_directory(self, pattern:str, dir:str):
+        '''
+        Find string in a directory
+        pattern: the string pattern you want to find
+        dir: the directory you want to search in
+        '''
+        if self.system == 'Linux':
+            return (self.run_cmd(cmd = f'grep -r -n {pattern} {dir}', cwd=self.src_path))['stdout']
+        else:
+            print('Only Linux currently')
+            exit(1)
+
 
     def codeql_create_database(self):
         '''
@@ -74,39 +115,11 @@ class AgentTools:
             return {"success": False, "error": str(e)}
 
 
-    # CodeQL query functions: 
-    def codeql_query_variable_allocfree(self, var_name: str):
-        from template import build_allocation_query, build_free_query, build_delete_array_query, build_delete_query
-        queries = ['allocation', 'free', 'delete', 'delete_array']
-        # build query file for each kind
-        for query in queries:
-            with open(f'{self.query_file_dir}{query}.ql', 'w') as f:
-                if query == 'allocation':
-                    f.write(build_allocation_query(var_name))
-                elif query == 'free':
-                    f.write(build_free_query(var_name))
-                elif query == 'delete':
-                    f.write(build_delete_query(var_name))
-                elif query == 'delete_array':
-                    f.write(build_delete_array_query(var_name))
-
-        for query in queries:
-            self.execute_query(query)
-
-    
-    def codeql_query_variable_dataflow(self, var_name:str):
-        from template import build_dataflow_query
-        with open(f'{self.query_file_dir}dataflow.ql', 'w') as f:
-            f.write(build_dataflow_query(var_name=var_name))
-        f.close()
-        self.execute_query('dataflow')
-
 
 if __name__ == '__main__':
-    at = AgentTools(src_path='test/', 
+    at = AgentTools(src_path='.', 
                     database_path='test/database_test', 
                     build_command='g++ test.cpp -o test', 
-                    tempfile_dir='CodeQL/',)
-    at.codeql_create_database()
-    at.codeql_query_variable_allocfree('b')
-    at.codeql_query_variable_dataflow('b')
+                    tempfile_dir='CodeQL/')
+    print(at.list_files())
+    print(at.view_one_file('../results/double-free3/test.cpp', 1, 400))
