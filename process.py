@@ -1,4 +1,4 @@
-from agents import create_condition_analyzer, create_condition_generator
+from agents import create_condition_analyzer, create_condition_generator, create_condition_judge_checker_agent
 from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_agentchat.conditions import TextMentionTermination
 import asyncio
@@ -67,61 +67,154 @@ class StaticAnalysisWarningsConfirmation:
 
         if '```json' in string_info:
             parts = string_info.split('```json')
-            string_info = parts[1]
+            string_info = parts[-1]
         if '```' in string_info:
             parts = string_info.split('```')
             string_info = parts[0]
+        while string_info[-1] != "}" : 
+            string_info = string_info[:-1]
 
         try:
             json_info = json.loads(string_info)
             return json_info
         except Exception as e:
             print("Wrong format of JSON")
-            return {}
+            return "Error"
     
 
     async def judge_conditions(self, json_info, tools:list, index = 0):
 
         # run condition judging agents for several times
-        from config import CONDITION_JUDGE_TIMES, CONDITION_JUDGE_MAX_TURN
+        from config import CONDITION_VOTE_TIMES, CONDITION_JUDGE_MAX_TURN
 
         judge_cnt = 0
 
-
-
         async def judge_one_time():
-            condition_analyzer = create_condition_analyzer(tools)
-            team = RoundRobinGroupChat(
-                participants = [condition_analyzer],
-                max_turns = 100,
-                termination_condition=TextMentionTermination("TERMINATE")
-            )
-            result = await team.run(task = json_info)
-            if PRINT_LOG:
+
+            from config import CONDITION_CHECK_MAX_TURN
+
+            log_info = ''
+
+            judge_pass = False
+
+            for judge_try in range(CONDITION_CHECK_MAX_TURN):
+
+                condition_analyzer = create_condition_analyzer(tools)
+                team = RoundRobinGroupChat(
+                    participants = [condition_analyzer],
+                    max_turns = 100,
+                    termination_condition=TextMentionTermination("TERMINATE")
+                )
+                result = await team.run(task = json_info)
+
                 dialogue = ''
                 for i in range(len(result.messages)):
                     dialogue += str(result.messages[i].content)
                     dialogue += '\n\n'
-                print_client_log(f'Condition Inspector {index}', dialogue, self.result_path)
-            result_json = self.extract_json(result.messages[-1].content)
-            return result_json
-        
+
+                log_info += f"Judge try {judge_try+1}:\n" + dialogue + "\n\n" 
+
+                result_json = self.extract_json(result.messages[-1].content)
+                if result_json == 'Error': 
+                    log_info += f"Judge try {judge_try+1} result: JSON format error.\n\n"
+                    continue
+
+
+                checker_prompt = f"Condition confirmation information:\n{json_info}\n\nCondition judgment to be checked:\n{json.dumps(result_json)}"
+                condition_judge_checker = create_condition_judge_checker_agent(tools)
+                checker_team = RoundRobinGroupChat(
+                    participants = [condition_judge_checker],
+                    max_turns = 100,
+                    termination_condition=TextMentionTermination("TERMINATE")
+                )
+                checker_result = await checker_team.run(task = json.dumps(checker_prompt))
+
+                checker_dialogue = ''
+                for i in range(len(checker_result.messages)):
+                    checker_dialogue += str(checker_result.messages[i].content)
+                    checker_dialogue += '\n\n'
+                log_info += f"Checker for try {judge_try+1}:\n" + checker_dialogue + "\n\n"
+
+                # print(checker_result.messages[-1].content)
+
+                checker_result_json = self.extract_json(checker_result.messages[-1].content)
+                if "check_result" in checker_result_json:
+                    if checker_result_json['check_result'] == 'Correct':
+                        judge_pass = True
+                        log_info += f"Judge try {judge_try+1} result: Correct.\n\n"
+                        break
+                    else:
+                        log_info += f"Judge try {judge_try+1} result: Incorrect.\n\n"
+
+            print_client_log(f'Condition Inspector {index}', log_info, self.result_path)
+
+            if judge_pass:
+                return result_json
+            else:
+                return {"result": "Unknown", "explanation": "Not pass check"}
 
         while judge_cnt < CONDITION_JUDGE_MAX_TURN:
-            judge_tasks = [judge_one_time() for i in range(CONDITION_JUDGE_TIMES)]
+            judge_tasks = [judge_one_time() for i in range(CONDITION_VOTE_TIMES)]
             judge_result_list = await asyncio.gather(*judge_tasks)
             true_cnt = 0
             false_cnt = 0
+            unknown_cnt = 0
+            true_reasons = []
+            false_reasons = []
+            unknown_reasons = []
             for r in judge_result_list:
                 if 'result' in r:
                     r_str = r['result']
-                    if r_str == 'T' or r_str == 't': true_cnt += 1
-                    elif r_str == 'F' or r_str == 'f': false_cnt += 1
-            if true_cnt > false_cnt: return {f'result for condition {index}': 'T', 'T Num': true_cnt, 'F Num': false_cnt}
-            elif false_cnt > true_cnt: return {f'result for condition {index}': 'F', 'T Num': true_cnt, 'F Num': false_cnt}
+                    if r_str == 'T' or r_str == 't': 
+                        true_cnt += 1
+                        true_reasons.append(r.get('explanation', ''))
+                    elif r_str == 'F' or r_str == 'f': 
+                        false_cnt += 1
+                        false_reasons.append(r.get('explanation', ''))
+                    elif r_str == 'Unknown' or r_str == 'unknown': 
+                        unknown_cnt += 1
+                        unknown_reasons.append(r.get('explanation', ''))
+            if true_cnt > max(false_cnt, unknown_cnt):
+                return {
+                    f"result for condition {index}": 'T',
+                    'T Num': true_cnt,
+                    'F Num': false_cnt,
+                    "Unknown Num": unknown_cnt,
+                    "T reasons": true_reasons,
+                    "F reasons": false_reasons,
+                    "Unknown reasons": unknown_reasons
+                }
+            elif false_cnt > max(true_cnt, unknown_cnt):
+                return {
+                    f'result for condition {index}': 'F',
+                    'T Num': true_cnt,
+                    'F Num': false_cnt,
+                    "Unknown Num": unknown_cnt,
+                    "T reasons": true_reasons,
+                    "F reasons": false_reasons,
+                    "Unknown reasons": unknown_reasons
+                }
+            elif unknown_cnt > max(true_cnt, false_cnt):
+                return {
+                    f'result for condition {index}': 'Unknown',
+                    'T Num': true_cnt,
+                    'F Num': false_cnt,
+                    "Unknown Num": unknown_cnt,
+                    "T reasons": true_reasons,
+                    "F reasons": false_reasons,
+                    "Unknown reasons": unknown_reasons
+                }
             else: judge_cnt += 1
 
-        return {f'result for condition {index}': 'N'}
+        return {
+            f'result for condition {index}': 'Unknown',
+            'T Num': true_cnt,
+            'F Num': false_cnt,
+            "Unknown Num": unknown_cnt,
+            "T reasons": true_reasons,
+            "F reasons": false_reasons,
+            "Unknown reasons": unknown_reasons
+        }
 
     
 
@@ -204,32 +297,36 @@ if __name__ == '__main__':
     # db_path: the path to save the database of CodeQL   目前还没有使用CodeQL的工具函数
     # codeql_result_dir: the path to save the result files of CodeQL
 
-    static_analysis_result = '''\
-{
-    "bug_type": "Null Pointer Dereference",
-    "line": 24,
-    "column": 3,
-    "procedure": "",
-    "file": "npd.c",
-    "qualifier": {
-        "Cppcheck": "Possible null pointer dereference: buf"
-    },
-    "Trace": [
-        {"filename": "npd.c", "line_number": 24, "column_number": 3, "description": ""},
-        {"filename": "npd.c", "line_number": 21, "column_number": 21, "description": ""},
-        {"filename": "npd.c", "line_number": 46, "column_number": 18, "description": ""}
-    ]
-}
+    root_dir = "/home/shuyang/Project/Static-Inspection-bugs/jq-check"
+    result_path_base = "/home/shuyang/Project/df_and_uaf/jq-check/uaf"
+
+    static_analysis_result = ""
+
+    with open("/home/shuyang/Project/Static-Inspection-bugs/jq_use-after-free.txt") as f:
+        sar_list = f.read()
+        sar_list = sar_list.split("\n\n")
+        f.close()
+    for idx, sar in enumerate(sar_list):
+        sar_lines = sar.split('\n')
+        ground_truth = sar_lines[0][2]
+        file1 = sar_lines[1][15:]
+        line1 = sar_lines[2][6:]
+        file2 = sar_lines[3][15:]
+        line2 = sar_lines[4][6:]
+        static_analysis_result += f'''
+{idx+1} Use after free warning:
+use at {file1}:{line1}
+free at {file2}:{line2}
 '''
 
+    sawc = StaticAnalysisWarningsConfirmation(
+            root_dir=root_dir,
+            make_cmd="", 
+            static_analysis_result=static_analysis_result,
+            database_path="",
+            codeql_result_dir="",
+            result_path=f"{result_path_base}/result_all.txt"
+        )
 
-    swac = StaticAnalysisWarningsConfirmation(
-        root_dir='/home/shuyang/Project/LLM4SA/test/npd',
-        make_cmd='',
-        static_analysis_result=static_analysis_result,
-        database_path='',
-        codeql_result_dir='',
-        result_path='/home/shuyang/Project/llm4sa-tests/test/test.txt'
-    )
-
-    asyncio.run(swac.start())
+    result = asyncio.run(sawc.start())
+    print(f'Ground truth: {ground_truth}, LLM result: {result}')
