@@ -1,4 +1,4 @@
-from agents import create_condition_analyzer, create_condition_generator, create_condition_judge_checker_agent
+from agents import create_condition_analyzer, create_condition_generator, create_condition_judge_checker_agent, create_condition_checker_agent
 from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_agentchat.conditions import TextMentionTermination
 import asyncio
@@ -6,6 +6,8 @@ from autogen_core.tools import FunctionTool
 from tools import AgentTools
 import json
 from copy import deepcopy
+from autogen_agentchat.messages import TextMessage
+from autogen_core import CancellationToken
 
 
 from config import PRINT_LOG
@@ -18,15 +20,20 @@ def print_client_log(title:str, content:str, log_path:str):
         f.write(f'----------End {title}----------\n\n\n')
     f.close()
 
+def write_result(content:str, result_path:str):
+    with open(result_path, 'a') as f:
+        f.write(content)
+    f.close()
 
 class StaticAnalysisWarningsConfirmation:
 
-    def __init__(self, root_dir, make_cmd, static_analysis_result, database_path, codeql_result_dir, result_path):
+    def __init__(self, root_dir, make_cmd, static_analysis_result, database_path, codeql_result_dir, log_path, result_path):
 
         self.root_dir = root_dir
         self.make_cmd = make_cmd
         self.sar = static_analysis_result
         self.agent_tools = AgentTools(src_path=root_dir, database_path=database_path, build_command=make_cmd, tempfile_dir=codeql_result_dir)
+        self.log_path = log_path
         self.result_path = result_path
 
     async def generate_conditions(self, input_info:str):
@@ -35,32 +42,96 @@ class StaticAnalysisWarningsConfirmation:
         view_one_file = FunctionTool(func=self.agent_tools.view_one_file, name='view_one_file', description='')
         grep_in_directory = FunctionTool(func=self.agent_tools.grep_in_directory, name='grep_in_directory', description='')
 
-        from fewshot import get_use_after_free_example, get_double_free_example
+        from fewshot import get_use_after_free_example, get_double_free_example, get_common_example
+        examples_for_common = FunctionTool(func=get_common_example, name='examples_for_common', description='Get examples for common conditions.')
         examples_for_uaf = FunctionTool(func=get_use_after_free_example, name='examples_for_use_after_free', description='Get examples for use-after-free conditions.')
         examples_for_df = FunctionTool(func=get_double_free_example, name='examples_for_double_free', description='Get examples for double-free conditions.')
 
         # create agent
-        condition_generator = create_condition_generator([list_files, 
-                                                          view_one_file, 
-                                                          grep_in_directory, 
-                                                          examples_for_uaf, 
-                                                          examples_for_df])
-        team = RoundRobinGroupChat(
-            participants = [condition_generator],
-            max_turns = 100,
-            termination_condition=TextMentionTermination("TERMINATE")
-        )
+        from config import CONDITION_GENERATE_MAX_TURN
 
-        result = await team.run(task = input_info)
+        log_info = ''
+        generate_pass = False
 
-        if PRINT_LOG:
+        checker_info = ""
+
+        for turn in range(CONDITION_GENERATE_MAX_TURN):
+
+            try: 
+
+                condition_generator = create_condition_generator([list_files, 
+                                                                view_one_file, 
+                                                                grep_in_directory, 
+                                                                examples_for_uaf, 
+                                                                examples_for_df, 
+                                                                examples_for_common])
+                team = RoundRobinGroupChat(
+                    participants = [condition_generator],
+                    max_turns = 100,
+                    termination_condition=TextMentionTermination("TERMINATE")
+                )
+
+                result = await team.run(task = input_info + checker_info)
+
+            except Exception as e:
+                continue
+
             dialogue = ''
             for i in range(len(result.messages)):
                 dialogue += str(result.messages[i].content)
                 dialogue += '\n\n'
-            print_client_log('Condition Generator', dialogue, self.result_path)
 
-        return result.messages[-1].content
+            log_info += f"Condition generation try {turn+1}:\n" + dialogue + "\n\n"
+
+            try:
+
+                checker = create_condition_checker_agent()
+                checker_prompt = f'''\
+Condition generation process and result:
+{dialogue}
+'''
+                response = await checker.on_messages(
+                    [TextMessage(content=checker_prompt, source="user")], CancellationToken()
+                )
+
+            except Exception as e:
+                continue
+
+            
+            log_info += f"Checker for condition generation try {turn+1}:\n" + response.chat_message.content + "\n\n"
+            checker_result_json = self.extract_json(response.chat_message.content)
+            if "check_result" in checker_result_json:
+                if checker_result_json['check_result'] == 'Correct':
+                    log_info += f"Generation try {turn+1} result: Correct.\n\n"
+                    generate_pass = True
+                    break
+                else:
+                    log_info += f"Generation try {turn+1} result: Incorrect.\n\n"
+                    if "explanation" in checker_result_json:
+                        checker_info = "\n\nYou have generated conditions for some times, but the checker found out that the conditions have something wrong: \n" + checker_result_json['explanation']
+
+        if PRINT_LOG:
+            print_client_log('Condition Generator', log_info, self.log_path)
+
+        if generate_pass:
+            try:
+
+                conditions = self.extract_json(result.messages[-1].content)
+                write_result(f'''\
+Conditions:
+{str(conditions)}
+''', self.result_path)
+                
+            except Exception as e:
+
+                write_result("Failed to extract conditions as JSON.\n", self.result_path)
+                exit("Failed to extract conditions as JSON.")
+
+            return conditions
+        
+        else:
+            write_result(f"Condition generation failed.\nAll {CONDITION_GENERATE_MAX_TURN} tries did not pass the check.\n", self.result_path)
+            exit("Condition generation failed.")
     
 
     def extract_json(self, string_info:str):
@@ -78,7 +149,6 @@ class StaticAnalysisWarningsConfirmation:
             json_info = json.loads(string_info)
             return json_info
         except Exception as e:
-            print("Wrong format of JSON")
             return "Error"
     
 
@@ -97,15 +167,23 @@ class StaticAnalysisWarningsConfirmation:
 
             judge_pass = False
 
+            checker_info = ""
+
             for judge_try in range(CONDITION_CHECK_MAX_TURN):
 
-                condition_analyzer = create_condition_analyzer(tools)
-                team = RoundRobinGroupChat(
-                    participants = [condition_analyzer],
-                    max_turns = 100,
-                    termination_condition=TextMentionTermination("TERMINATE")
-                )
-                result = await team.run(task = json_info)
+                try:
+
+                    condition_analyzer = create_condition_analyzer(tools)
+                    team = RoundRobinGroupChat(
+                        participants = [condition_analyzer],
+                        max_turns = 100,
+                        termination_condition=TextMentionTermination("TERMINATE")
+                    )
+                    result = await team.run(task = json_info + checker_info)
+
+                except Exception as e:
+                    result = {"result": "None", "explanation": ""}
+                    return result
 
                 dialogue = ''
                 for i in range(len(result.messages)):
@@ -120,24 +198,42 @@ class StaticAnalysisWarningsConfirmation:
                     continue
 
 
-                checker_prompt = f"Condition confirmation information:\n{json_info}\n\nCondition judgment to be checked:\n{json.dumps(result_json)}"
-                condition_judge_checker = create_condition_judge_checker_agent(tools)
-                checker_team = RoundRobinGroupChat(
-                    participants = [condition_judge_checker],
-                    max_turns = 100,
-                    termination_condition=TextMentionTermination("TERMINATE")
-                )
-                checker_result = await checker_team.run(task = json.dumps(checker_prompt))
+                # checker_prompt = f"Condition confirmation information:\n{json_info}\n\nCondition judgment to be checked:\n{json.dumps(result_json)}"
+                # condition_judge_checker = create_condition_judge_checker_agent(tools)
+                # checker_team = RoundRobinGroupChat(
+                #     participants = [condition_judge_checker],
+                #     max_turns = 100,
+                #     termination_condition=TextMentionTermination("TERMINATE")
+                # )
+                # checker_result = await checker_team.run(task = json.dumps(checker_prompt))
 
-                checker_dialogue = ''
-                for i in range(len(checker_result.messages)):
-                    checker_dialogue += str(checker_result.messages[i].content)
-                    checker_dialogue += '\n\n'
-                log_info += f"Checker for try {judge_try+1}:\n" + checker_dialogue + "\n\n"
+                # checker_dialogue = ''
+                # for i in range(len(checker_result.messages)):
+                #     checker_dialogue += str(checker_result.messages[i].content)
+                #     checker_dialogue += '\n\n'
+                # log_info += f"Checker for try {judge_try+1}:\n" + checker_dialogue + "\n\n"
 
-                # print(checker_result.messages[-1].content)
+                try: 
 
-                checker_result_json = self.extract_json(checker_result.messages[-1].content)
+                    checker_prompt = f'''\
+Condition confirmation information:
+{json_info}
+
+Condition judgment to be checked:
+{dialogue}
+'''
+                    condition_judge_checker = create_condition_judge_checker_agent()
+                    response = await condition_judge_checker.on_messages(
+                        [TextMessage(content=checker_prompt, source="user")], CancellationToken()
+                    )
+
+                except Exception as e:
+                    result = {"result": "None", "explanation": ""}
+                    return result
+
+                log_info += f"Checker for try {judge_try+1}:\n" + response.chat_message.content + "\n\n"
+
+                checker_result_json = self.extract_json(response.chat_message.content)
                 if "check_result" in checker_result_json:
                     if checker_result_json['check_result'] == 'Correct':
                         judge_pass = True
@@ -145,13 +241,16 @@ class StaticAnalysisWarningsConfirmation:
                         break
                     else:
                         log_info += f"Judge try {judge_try+1} result: Incorrect.\n\n"
+                        if "explanation" in checker_result_json:
+                            checker_info = "\n\nYou have judged conditions for some times, but the checker found out that the judgment has something wrong: \n" + checker_result_json['explanation']
 
-            print_client_log(f'Condition Inspector {index}', log_info, self.result_path)
+            if PRINT_LOG:
+                print_client_log(f'Condition Inspector {index}', log_info, self.log_path)
 
             if judge_pass:
                 return result_json
             else:
-                return {"result": "Unknown", "explanation": "Not pass check"}
+                return {"result": "None", "explanation": "Not pass check"}
 
         while judge_cnt < CONDITION_JUDGE_MAX_TURN:
             judge_tasks = [judge_one_time() for i in range(CONDITION_VOTE_TIMES)]
@@ -221,17 +320,16 @@ class StaticAnalysisWarningsConfirmation:
     async def start(self):
 
         if PRINT_LOG:
-            with open(self.result_path, 'w') as f:
+            with open(self.log_path, 'w') as f:
                 f.write('')
             f.close()
-        print_client_log('Input', f'Root directory: {self.root_dir}\nMake command: {self.make_cmd}\nAnalysis result:\n{self.sar}\n', self.result_path)
+        print_client_log('Input', f'Root directory: {self.root_dir}\nMake command: {self.make_cmd}\nAnalysis result:\n{self.sar}\n', self.log_path)
 
         # get prompt for the first agent to generate the conditions
         generate_prompt = 'The directory of the project: ' + self.root_dir + '\nThe result of the static analyzer:\n' + self.sar
         
         # generate and extract the conditions
-        conditions = await self.generate_conditions(generate_prompt)
-        conditions_json = self.extract_json(conditions)
+        conditions_json = await self.generate_conditions(generate_prompt)
 
         # extract the conditions and get prompts for each judging agent
         judger_prompt = []
@@ -275,7 +373,7 @@ conditions:
 {str(conditions_json)}
 results:       
 {str(result)}
-        ''', self.result_path)
+        ''', self.log_path)
 
         final_results = []
         for c in result:
@@ -285,7 +383,10 @@ results:
                     condition_result = 'False positive'
                     break
             final_results.append(condition_result)
-        print_client_log('Final results', str(condition_result), self.result_path)
+        print_client_log('Final results', str(condition_result), self.log_path)
+
+        write_result(f"\nFinal results: {final_results}\n", self.result_path)
+        write_result(f"\nCondition judgment: {json.dumps(conditions_json, indent=4)}\n", self.result_path)
 
         return final_results
             
@@ -297,27 +398,16 @@ if __name__ == '__main__':
     # db_path: the path to save the database of CodeQL   目前还没有使用CodeQL的工具函数
     # codeql_result_dir: the path to save the result files of CodeQL
 
-    root_dir = "/home/shuyang/Project/Static-Inspection-bugs/jq-check"
-    result_path_base = "/home/shuyang/Project/df_and_uaf/jq-check/uaf"
+    root_dir = "/home/shuyang/Project/results/double-free1/"
+    log_path_base = "/home/shuyang/Project/"
 
-    static_analysis_result = ""
-
-    with open("/home/shuyang/Project/Static-Inspection-bugs/jq_use-after-free.txt") as f:
-        sar_list = f.read()
-        sar_list = sar_list.split("\n\n")
-        f.close()
-    for idx, sar in enumerate(sar_list):
-        sar_lines = sar.split('\n')
-        ground_truth = sar_lines[0][2]
-        file1 = sar_lines[1][15:]
-        line1 = sar_lines[2][6:]
-        file2 = sar_lines[3][15:]
-        line2 = sar_lines[4][6:]
-        static_analysis_result += f'''
-{idx+1} Use after free warning:
-use at {file1}:{line1}
-free at {file2}:{line2}
+    static_analysis_result = '''\
+test.cpp:16:9: warning: Attempt to free released memory [cplusplus.NewDelete]
+   16 |         delete []test;
+      |         ^~~~~~~~~~~~~
+1 warning generated.
 '''
+
 
     sawc = StaticAnalysisWarningsConfirmation(
             root_dir=root_dir,
@@ -325,8 +415,8 @@ free at {file2}:{line2}
             static_analysis_result=static_analysis_result,
             database_path="",
             codeql_result_dir="",
-            result_path=f"{result_path_base}/result_all.txt"
+            log_path=f"{log_path_base}log.txt",
+            result_path=f"{log_path_base}result.txt"
         )
 
     result = asyncio.run(sawc.start())
-    print(f'Ground truth: {ground_truth}, LLM result: {result}')

@@ -1,0 +1,3 @@
+Potential double free:
+first free at example/example.cpp:9: delete[] p;
+second free at example/example.cpp:24: delete[] b;

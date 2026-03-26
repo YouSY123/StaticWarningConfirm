@@ -1,5 +1,8 @@
 # examples for agents
 
+def get_common_example():
+    return get_example("common_example", "common")
+
 def get_use_after_free_example():
     return get_example('uaf1', 'use-after-free')
 

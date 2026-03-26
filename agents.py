@@ -30,7 +30,10 @@ You can use the following function tools to help you(When passing directory addr
     search a string pattern in a directory
     parameters: pattern, dir
     call example: grep_in_directory(pattern='malloc', dir='src/')
-Before you start to analyze, first call examples_for_use_after_free() and examples_for_double_free() to learning condition generation.
+Before you start to analyze, first call examples_for_common() to learn condition generation. Then, you can call the following to get more examples.
+(1) examples_for_use_after_free()
+(2) examples_for_double_free()
+
 You should combine the warning information and the confirmation conditions in JSON format and output it. 
 Please note that the JSON format must be("```json" and "```" are necessary in your answer):
 ```json
@@ -61,6 +64,7 @@ Attention:
 (2) For warnings that happen in one certain execution path(e.g. double free, use after free), everything you need to confirm should be write in one condition. Otherwise, if you break it into multiple conditions, they may not be judged correctly.
 (3) Some warnings seem to occur in one function, but they can be caused by repeated calls of the function. You should take this into consideration when generating conditions.
 (4) Conditions cannot depend on each other. For example: "Confirmation conditions":{"1": "A is true", "2": "Based on A/If A is true, ..."} is not allowed.
+(5) Only focus on the warning given. If you find other bugs in the code, ignore them. Make sure the conditions you generate match the warning information(file, line, variable...) strictly.
 
 Then output TERMINATE
 '''
@@ -108,34 +112,18 @@ Then output TERMINATE
   )
 
 
-def create_condition_judge_checker_agent(tools: list):
+def create_condition_judge_checker_agent():
   '''
   The agent checks whether the condition judgment is correct
   '''
   return AssistantAgent(
       name = 'Condition_judge_checker',
       model_client = default_client,
-      tools = tools,
-      reflect_on_tool_use = True,
       description = '',
       system_message = '''
 You are cooperating with others to confirm the correctness of the warnings provided by a static code analyzer. The previous agent has finished the following task: generate conditions to confirm warnings and judge the correctness of the conditions. Your task is to check whether the judgment of the conditions is correct.
 You will be given JSON format information of the program directory, warning details, a confirmation condition and the judgment of the condition. Your job is to check whether the judgment is correct. 
-The judgment contains "result" and "explanation". The key is to check whether the explanation is reasonable and can support the result.
-
-You can use the following function tools to help you(When passing directory address, use absolute path):
-(1) list_files()
-    list the file structure of the whole project directory. 
-    parameters: The function does not need any parameter
-    call example: list_files()                     
-(2) view_one_file(file_path:str, start_line:int = 1, end_line:Union[int, str] = '\\$')
-    view a file with address file_path from start_line to end_line.
-    parameters: file_path, start_line(default: 1), end_line(default: the last line)
-    call example: view_one_file(file_path='main.c', start_line=1, end_line=20)
-(3) grep_in_directory(pattern:str, dir:str)
-    search a string pattern in a directory
-    parameters: pattern, dir
-    call example: grep_in_directory(pattern='malloc', dir='src/')
+The judgment contains result and the whole process. The key is to check whether the process is reasonable and can support the result.
 
 If you find that the judgment is correct, just output JSON format("```json" and "```" are necessary):
 ```json
@@ -155,15 +143,13 @@ Then output TERMINATE
   )
 
 
-def create_condition_checker_agent(tools: list):
+def create_condition_checker_agent():
   '''
   The agent checks whether the conditions generated are appropriate
   '''
   return AssistantAgent(
       name = 'Condition_checker',
       model_client = default_client,
-      tools = tools,
-      reflect_on_tool_use = True,
       description = '',
       system_message = '''
 You are cooperating with others to confirm the correctness of the warnings provided by a static code analyzer. The previous agent has finished the following task: generate conditions to confirm warnings. Your task is to check whether the generated conditions are appropriate.

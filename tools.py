@@ -117,8 +117,8 @@ class AgentTools:
 
 
 if __name__ == '__main__':
-    at = AgentTools(src_path='/home/shuyang/Project/Static-Inspection-bugs/file-check', 
+    at = AgentTools(src_path='/home/shuyang/Project/example', 
                     database_path='test/database_test', 
                     build_command='g++ test.cpp -o test', 
                     tempfile_dir='CodeQL/')
-    print(at.list_files())
+    print(at.grep_in_directory(pattern="delete", dir="."))
