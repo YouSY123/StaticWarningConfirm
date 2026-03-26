@@ -119,7 +119,7 @@ Condition generation process and result:
                 conditions = self.extract_json(result.messages[-1].content)
                 write_result(f'''\
 Conditions:
-{str(conditions)}
+{json.dumps(conditions, indent=4)}
 ''', self.result_path)
                 
             except Exception as e:
@@ -323,8 +323,11 @@ Condition judgment to be checked:
             with open(self.log_path, 'w') as f:
                 f.write('')
             f.close()
-        print_client_log('Input', f'Root directory: {self.root_dir}\nMake command: {self.make_cmd}\nAnalysis result:\n{self.sar}\n', self.log_path)
+            print_client_log('Input', f'Root directory: {self.root_dir}\nMake command: {self.make_cmd}\nAnalysis result:\n{self.sar}\n', self.log_path)
 
+        with open(self.result_path, 'w') as f:
+            f.write('')
+        f.close()
         # get prompt for the first agent to generate the conditions
         generate_prompt = 'The directory of the project: ' + self.root_dir + '\nThe result of the static analyzer:\n' + self.sar
         
@@ -386,7 +389,7 @@ results:
         print_client_log('Final results', str(condition_result), self.log_path)
 
         write_result(f"\nFinal results: {final_results}\n", self.result_path)
-        write_result(f"\nCondition judgment: {json.dumps(conditions_json, indent=4)}\n", self.result_path)
+        write_result(f"\nCondition judgment: {json.dumps(result, indent=4)}\n", self.result_path)
 
         return final_results
             
