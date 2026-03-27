@@ -8,6 +8,7 @@ import json
 from copy import deepcopy
 from autogen_agentchat.messages import TextMessage
 from autogen_core import CancellationToken
+from typing import Union
 
 
 from config import PRINT_LOG
@@ -36,12 +37,21 @@ class StaticAnalysisWarningsConfirmation:
         self.log_path = log_path
         self.result_path = result_path
 
+        def list_files():
+            return self.agent_tools.list_files()
+        
+        def view_one_file(file_path:str, start_line:int = 1, end_line:Union[int, str] = '\\$'):
+            return self.agent_tools.view_one_file(file_path, start_line, end_line)
+        
+        def grep_in_directory(pattern:str, dir:str):
+            return self.agent_tools.grep_in_directory(pattern, dir)
+        
+        self.tool_list_files = FunctionTool(func=list_files, name='list_files', description='')
+        self.tool_view_one_file = FunctionTool(func=view_one_file, name='view_one_file', description='')
+        self.tool_grep_in_directory = FunctionTool(func=grep_in_directory, name='grep_in_directory', description='')
+
     async def generate_conditions(self, input_info:str):
         # create tools for the agent
-        list_files = FunctionTool(func=self.agent_tools.list_files, name='list_files', description='')
-        view_one_file = FunctionTool(func=self.agent_tools.view_one_file, name='view_one_file', description='')
-        grep_in_directory = FunctionTool(func=self.agent_tools.grep_in_directory, name='grep_in_directory', description='')
-
         from fewshot import get_use_after_free_example, get_double_free_example, get_common_example
         examples_for_common = FunctionTool(func=get_common_example, name='examples_for_common', description='Get examples for common conditions.')
         examples_for_uaf = FunctionTool(func=get_use_after_free_example, name='examples_for_use_after_free', description='Get examples for use-after-free conditions.')
@@ -59,9 +69,9 @@ class StaticAnalysisWarningsConfirmation:
 
             try: 
 
-                condition_generator = create_condition_generator([list_files, 
-                                                                view_one_file, 
-                                                                grep_in_directory, 
+                condition_generator = create_condition_generator([self.tool_list_files, 
+                                                                self.tool_view_one_file, 
+                                                                self.tool_grep_in_directory,
                                                                 examples_for_uaf, 
                                                                 examples_for_df, 
                                                                 examples_for_common])
@@ -354,12 +364,8 @@ Condition judgment to be checked:
             return
 
         # send prompts to agents by asyncio
-         # create tools for the agent
-        list_files = FunctionTool(func=self.agent_tools.list_files, name='list_files', description='')
-        view_one_file = FunctionTool(func=self.agent_tools.view_one_file, name='view_one_file', description='')
-        grep_in_directory = FunctionTool(func=self.agent_tools.grep_in_directory, name='grep_in_directory', description='')
         # create agent
-        judge_tasks = [self.judge_conditions(json_info, [list_files, view_one_file, grep_in_directory], idx+1) for idx, json_info in enumerate(judger_prompt)]
+        judge_tasks = [self.judge_conditions(json_info, [self.tool_list_files, self.tool_view_one_file, self.tool_grep_in_directory], idx+1) for idx, json_info in enumerate(judger_prompt)]
         llm_results = await asyncio.gather(*judge_tasks)
         result = []
         result_ptr = 0
