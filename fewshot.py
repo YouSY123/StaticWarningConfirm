@@ -1,6 +1,15 @@
 # examples for agents
+from langchain.tools import tool
 
+@tool
 def get_example(type: str) -> str:
+
+    """Get example for condition generation. 
+
+    Args: 
+        type: The type of example, containing "common", "use-after-free", "double-free"
+    """
+
     if type == "common":
         return get_example_base("common_example", "common")
     elif type == "use-after-free":

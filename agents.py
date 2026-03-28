@@ -1,17 +1,15 @@
-from autogen_agentchat.agents import AssistantAgent
-from config import default_client
+from config import default_model
+from langchain.agents import create_agent
 
 def create_condition_generator(tools:list):
   '''
   The agent generates the conditions based on the source code and the result of the static analyzer.
   '''
-  return AssistantAgent(
+  return create_agent(
       name = 'Condition_generator', 
-      model_client = default_client, 
+      model = default_model,
       tools = tools,
-      reflect_on_tool_use = True, 
-      description = '',
-      system_message = '''
+      system_prompt = '''
 You will be given a directory containing a cpp project and warnings on the project provided by a static analyzing tools.
 Your task is to analyze and return the conditions which are used to judge the correctness of these warnings. Make sure that the warning is true positive if and only if all conditions are true.
 The conditions you return should be:
@@ -60,6 +58,7 @@ Please note that the JSON format must be("```json" and "```" are necessary in yo
   }
 }
 ```
+Do not output anything else in the last turn.
 
 Attention:
 (1) Do not generate too many conditions. Try to keep the number of conditions less than 5 for each warning. For easy warnings, 1 or 2 conditions are enough.
@@ -78,13 +77,11 @@ def create_condition_analyzer(tools:list):
   '''
   The agent judges the correctness of the condition 
   '''
-  return AssistantAgent(
-  name = 'Condition_analyzer', 
-      model_client = default_client, 
+  return create_agent(
+      name = 'Condition_analyzer', 
+      model = default_model, 
       tools = tools,
-      reflect_on_tool_use = True,
-      description = '',
-      system_message = '''
+      system_prompt = '''
 You need to cooperate with others to confirm the correctness of the warnings provided by a static code analyzer. You will be given JSON format information of the program directory, warning details and a comfirmation condition. Your job is to judge whether the condition is true or false. 
 You can use the following function tools to help you:
 (1) list_files()
@@ -105,6 +102,8 @@ You should judge the correctness of the condition and output the results in JSON
 {"result": "T/F/Unknown", "explanation": "..."}
 ```
 
+Do not output anything else in the last turn. The explanation should be brief.
+
 If you are sure that the condition is true, output T and give an explanation to prove it. For example, if the condition is "Exist an execution path ...", you should give the path.
 If you are sure that the condition is false, output F and give an explanation to prove it. For example, if the condition is "The two pointers point to the same memory", you should find evidence that they point to different memory.
 If you are not sure about the condition, feel free to output Unknown and give your reasons and what you need to judge it.
@@ -118,11 +117,10 @@ def create_condition_judge_checker_agent():
   '''
   The agent checks whether the condition judgment is correct
   '''
-  return AssistantAgent(
+  return create_agent(
       name = 'Condition_judge_checker',
-      model_client = default_client,
-      description = '',
-      system_message = '''
+      model = default_model, 
+      system_prompt = '''
 You are cooperating with others to confirm the correctness of the warnings provided by a static code analyzer. The previous agent has finished the following task: generate conditions to confirm warnings and judge the correctness of the conditions. Your task is to check whether the judgment of the conditions is correct.
 You will be given JSON format information of the program directory, warning details, a confirmation condition and the judgment of the condition. Your job is to check whether the judgment is correct. 
 The judgment contains result and the whole process. The key is to check whether the process is reasonable and can support the result.
@@ -136,6 +134,8 @@ If you find that the judgment is incorrect, output result and explanation in JSO
 {"check_result": "Incorrect", "explanation": "..."}
 ``` 
 
+Do not output anything else. The explanation should be brief. If result is correct, explanation is not needed.
+
 Additionally, you need to check the following points:
 (1) The judger should get enough imformation from tools. If some key information is missing due to tool call failure, the result is incorrect.
 
@@ -148,11 +148,10 @@ def create_condition_checker_agent():
   '''
   The agent checks whether the conditions generated are appropriate
   '''
-  return AssistantAgent(
+  return create_agent(
       name = 'Condition_checker',
-      model_client = default_client,
-      description = '',
-      system_message = '''
+      model = default_model, 
+      system_prompt = '''
 You are cooperating with others to confirm the correctness of the warnings provided by a static code analyzer. The previous agent has finished the following task: generate conditions to confirm warnings. Your task is to check whether the generated conditions are appropriate.
 You need to check the conditions based on the following points:
 (1) All conditions should be independent from each other. That is, no condition can involve any other condition.
@@ -163,6 +162,7 @@ Output your checking result in JSON format("```json" and "```" are necessary):
 ```json
 {"check_result": "Correct/Incorrect", "explanation": "..."}
 ```
+Do not output anything else. The explanation should be brief. If result is correct, explanation is not needed.
 Then output TERMINATE
 '''
   )

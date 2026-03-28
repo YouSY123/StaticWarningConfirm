@@ -1,6 +1,6 @@
 # The default llm model used by the project
-from autogen_ext.models.openai import OpenAIChatCompletionClient
 import json
+from langchain_openai import ChatOpenAI
 
 with open('llm_api.json', 'r') as f:
     llm_api_info = json.load(f)
@@ -9,20 +9,14 @@ API_KEY = llm_api_info['api_key']
 BASE_URL = llm_api_info['base_url']
 MODEL = llm_api_info['model']
 
-default_client = OpenAIChatCompletionClient(
-    model = MODEL,
-    api_key = API_KEY,
-    base_url = BASE_URL,
-    timeout = 600,
-    model_info = {
-        'vision': False,
-        'function_calling': True,
-        'json_output': True,
-        'family': 'unknown',
-        'structured_output': True
-    }
-)
 
+default_model = ChatOpenAI(
+    model=MODEL, 
+    api_key=API_KEY, 
+    base_url=BASE_URL,
+    timeout=600, 
+    reasoning_effort="none"
+)
 
 # Whether to print log of the clients
 PRINT_LOG = True

@@ -1,14 +1,10 @@
 from agents import create_condition_analyzer, create_condition_generator, create_condition_judge_checker_agent, create_condition_checker_agent
-from autogen_agentchat.teams import RoundRobinGroupChat
-from autogen_agentchat.conditions import TextMentionTermination
 import asyncio
-from autogen_core.tools import FunctionTool
 from tools import AgentTools
 import json
 from copy import deepcopy
-from autogen_agentchat.messages import TextMessage
-from autogen_core import CancellationToken
 from typing import Union
+from langchain.tools import tool
 
 
 from config import PRINT_LOG
@@ -55,25 +51,35 @@ class StaticAnalysisWarningsConfirmation:
             print("Failed to initialize result file.")
             exit("Failed to initialize result file.")
 
-
-
-        def list_files():
-            return self.agent_tools.list_files()
-        
-        def view_one_file(file_path:str, start_line:int = 1, end_line:Union[int, str] = '\\$'):
-            return self.agent_tools.view_one_file(file_path, start_line, end_line)
-        
-        def grep_in_directory(pattern:str, dir:str):
-            return self.agent_tools.grep_in_directory(pattern, dir)
-        
-        self.tool_list_files = FunctionTool(func=list_files, name='list_files', description='')
-        self.tool_view_one_file = FunctionTool(func=view_one_file, name='view_one_file', description='')
-        self.tool_grep_in_directory = FunctionTool(func=grep_in_directory, name='grep_in_directory', description='')
-
     async def generate_conditions(self, input_info:str):
         # create tools for the agent
         from fewshot import get_example
-        get_example_func = FunctionTool(func=get_example, name='get_example', description='')
+
+        @tool
+        def list_files():
+            '''List file structure in the src directory'''
+            return self.agent_tools.list_files()
+        @tool
+        def view_one_file(file_path:str, start_line:int = 1, end_line:Union[int, str] = '\\$'):
+            '''View a file in the src directory
+
+                Args:
+
+                    file_path: the path of file you want to view
+                    start_line: the line number to start viewing
+                    end_line: the line number to end viewing
+            '''
+            return self.agent_tools.view_one_file(file_path, start_line, end_line)
+        @tool
+        def grep_in_directory(pattern:str, dir:str):
+            '''Find string in a directory
+
+                Args:
+
+                    pattern: the string pattern you want to find
+                    dir: the directory you want to search in
+            '''
+            return self.agent_tools.grep_in_directory(pattern, dir)
 
         # create agent
         from config import CONDITION_GENERATE_MAX_TURN
@@ -85,47 +91,47 @@ class StaticAnalysisWarningsConfirmation:
 
         for turn in range(CONDITION_GENERATE_MAX_TURN):
 
+            # generate conditions
             try: 
 
-                condition_generator = create_condition_generator([self.tool_list_files, 
-                                                                self.tool_view_one_file, 
-                                                                self.tool_grep_in_directory,
-                                                                get_example_func])
-                team = RoundRobinGroupChat(
-                    participants = [condition_generator],
-                    max_turns = 100,
-                    termination_condition=TextMentionTermination("TERMINATE")
-                )
+                condition_generator = create_condition_generator([get_example, list_files, view_one_file, grep_in_directory])
 
-                result = await team.run(task = input_info + checker_info)
+                result = await condition_generator.ainvoke(
+                    {"messages": [{"role": "user", "content": input_info + checker_info}]}
+                )
 
             except Exception as e:
                 continue
 
             dialogue = ''
-            for i in range(len(result.messages)):
-                dialogue += str(result.messages[i].content)
-                dialogue += '\n\n'
+            for message in result["messages"]:
+                if hasattr(message, "content"):
+                    if message.content != "":
+                        dialogue += (str(message.content) + "\n\n")
+                if hasattr(message, "tool_calls"):
+                    if message.tool_calls != []:
+                        dialogue += (str(message.tool_calls) + "\n\n")
+
 
             log_info += f"Condition generation try {turn+1}:\n" + dialogue + "\n\n"
 
             try:
 
                 checker = create_condition_checker_agent()
-                checker_prompt = f'''\
-Condition generation process and result:
-{dialogue}
-'''
-                response = await checker.on_messages(
-                    [TextMessage(content=checker_prompt, source="user")], CancellationToken()
+                checker_prompt = f"Condition generation process and result:\n{dialogue}"
+
+                checker_result = await checker.ainvoke(
+                    {"messages": [{"role": "user", "content": checker_prompt}]}
                 )
 
             except Exception as e:
                 continue
 
             
-            log_info += f"Checker for condition generation try {turn+1}:\n" + response.chat_message.content + "\n\n"
-            checker_result_json = self.extract_json(response.chat_message.content)
+            log_info += f"Checker for condition generation try {turn+1}:\n" + checker_result["messages"][-1].content + "\n\n"
+
+            checker_result_json = self.extract_json(checker_result["messages"][-1].content)
+
             if "check_result" in checker_result_json:
                 if checker_result_json['check_result'] == 'Correct':
                     log_info += f"Generation try {turn+1} result: Correct.\n\n"
@@ -142,11 +148,8 @@ Condition generation process and result:
         if generate_pass:
             try:
 
-                conditions = self.extract_json(result.messages[-1].content)
-                write_result(f'''\
-Conditions:
-{json.dumps(conditions, indent=4)}
-''', self.result_path)
+                conditions = self.extract_json(result["messages"][-1].content)
+                write_result(f"Conditions:\n{json.dumps(conditions, indent=4)}", self.result_path)
                 
             except Exception as e:
 
@@ -168,7 +171,7 @@ Conditions:
         if '```' in string_info:
             parts = string_info.split('```')
             string_info = parts[0]
-        while string_info[-1] != "}" : 
+        while len(string_info) != 0 and string_info[-1] != "}" : 
             string_info = string_info[:-1]
 
         try:
@@ -200,66 +203,47 @@ Conditions:
                 try:
 
                     condition_analyzer = create_condition_analyzer(tools)
-                    team = RoundRobinGroupChat(
-                        participants = [condition_analyzer],
-                        max_turns = 100,
-                        termination_condition=TextMentionTermination("TERMINATE")
+
+                    result = await condition_analyzer.ainvoke(
+                        {"messages": [{"role": "user", "content": json_info + checker_info}]}
                     )
-                    result = await team.run(task = json_info + checker_info)
 
                 except Exception as e:
                     result = {"result": "None", "explanation": ""}
                     return result
 
                 dialogue = ''
-                for i in range(len(result.messages)):
-                    dialogue += str(result.messages[i].content)
-                    dialogue += '\n\n'
+                for message in result["messages"]:
+                    if hasattr(message, "content"):
+                        if message.content != "":
+                            dialogue += (str(message.content) + "\n\n")
+                    if hasattr(message, "tool_calls"):
+                        if message.tool_calls != []:
+                            dialogue += (str(message.tool_calls) + "\n\n")
+
 
                 log_info += f"Judge try {judge_try+1}:\n" + dialogue + "\n\n" 
 
-                result_json = self.extract_json(result.messages[-1].content)
+                result_json = self.extract_json(result["messages"][-1].content)
                 if result_json == 'Error': 
                     log_info += f"Judge try {judge_try+1} result: JSON format error.\n\n"
                     continue
 
-
-                # checker_prompt = f"Condition confirmation information:\n{json_info}\n\nCondition judgment to be checked:\n{json.dumps(result_json)}"
-                # condition_judge_checker = create_condition_judge_checker_agent(tools)
-                # checker_team = RoundRobinGroupChat(
-                #     participants = [condition_judge_checker],
-                #     max_turns = 100,
-                #     termination_condition=TextMentionTermination("TERMINATE")
-                # )
-                # checker_result = await checker_team.run(task = json.dumps(checker_prompt))
-
-                # checker_dialogue = ''
-                # for i in range(len(checker_result.messages)):
-                #     checker_dialogue += str(checker_result.messages[i].content)
-                #     checker_dialogue += '\n\n'
-                # log_info += f"Checker for try {judge_try+1}:\n" + checker_dialogue + "\n\n"
-
                 try: 
 
-                    checker_prompt = f'''\
-Condition confirmation information:
-{json_info}
-
-Condition judgment to be checked:
-{dialogue}
-'''
+                    checker_prompt = f"Condition confirmation information:\n{json_info}\n\nCondition judgment to be checked:\n{dialogue}"
                     condition_judge_checker = create_condition_judge_checker_agent()
-                    response = await condition_judge_checker.on_messages(
-                        [TextMessage(content=checker_prompt, source="user")], CancellationToken()
+                    checker_result = await condition_judge_checker.ainvoke(
+                        {"messages": [{"role": "user", "content": checker_prompt}]}
                     )
 
                 except Exception as e:
                     result = {"result": "None", "explanation": ""}
                     return result
 
-                log_info += f"Checker for try {judge_try+1}:\n" + response.chat_message.content + "\n\n"
+                log_info += f"Checker for try {judge_try+1}:\n" + checker_result["messages"][-1].content + "\n\n"
 
-                checker_result_json = self.extract_json(response.chat_message.content)
+                checker_result_json = self.extract_json(checker_result["messages"][-1].content)
                 if "check_result" in checker_result_json:
                     if checker_result_json['check_result'] == 'Correct':
                         judge_pass = True
@@ -371,7 +355,33 @@ Condition judgment to be checked:
 
         # send prompts to agents by asyncio
         # create agent
-        judge_tasks = [self.judge_conditions(json_info, [self.tool_list_files, self.tool_view_one_file, self.tool_grep_in_directory], idx+1) for idx, json_info in enumerate(judger_prompt)]
+        @tool
+        def list_files():
+            '''List file structure in the src directory'''
+            return self.agent_tools.list_files()
+        @tool
+        def view_one_file(file_path:str, start_line:int = 1, end_line:Union[int, str] = '\\$'):
+            '''View a file in the src directory
+
+                Args:
+
+                    file_path: the path of file you want to view
+                    start_line: the line number to start viewing
+                    end_line: the line number to end viewing
+            '''
+            return self.agent_tools.view_one_file(file_path, start_line, end_line)
+        @tool
+        def grep_in_directory(pattern:str, dir:str):
+            '''Find string in a directory
+
+                Args:
+
+                    pattern: the string pattern you want to find
+                    dir: the directory you want to search in
+            '''
+            return self.agent_tools.grep_in_directory(pattern, dir)
+        
+        judge_tasks = [self.judge_conditions(json_info, [list_files, view_one_file, grep_in_directory], idx+1) for idx, json_info in enumerate(judger_prompt)]
         llm_results = await asyncio.gather(*judge_tasks)
         result = []
         result_ptr = 0
@@ -383,12 +393,7 @@ Condition judgment to be checked:
                 result_ptr += 1
             result.append(warning_result)
 
-        print_client_log('Results for conditions', f'''\
-conditions:
-{str(conditions_json)}
-results:       
-{str(result)}
-        ''', self.log_path)
+        print_client_log('Results for conditions', f"conditions:\n{str(conditions_json)}\nresults:\n{str(result)}", self.log_path)
 
         final_results = []
         for c in result:

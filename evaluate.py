@@ -35,3 +35,14 @@ def evaluate_once(root_dir, static_analysis_result, log_path, result_path, proje
         else:
             f.write(f'[{datetime.now()}] {project_name}: Uncertain. Result: {result}, Ground Truth: {"True positive" if ground_truth else "False positive"}\n')
             return None
+        
+
+print(evaluate_once(
+    root_dir="/home/shuyang/Project/Static-Inspection-bugs/file-check", 
+    static_analysis_result="Potential double free\nFirst: src/buffer.c:90\nSecond: src/buffer.c:81", 
+    log_path="../log.txt", 
+    result_path="../result.txt",
+    project_name="project", 
+    ground_truth=False,
+    statistics_file="../statistics.txt"
+))
