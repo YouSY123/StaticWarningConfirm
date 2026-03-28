@@ -6,20 +6,11 @@ import platform
 
 
 class AgentTools:
-    def __init__(self, src_path:str, database_path:str, build_command:str, tempfile_dir:str, language:str = 'c-cpp'):
+    def __init__(self, src_path:str, language:str = 'c-cpp'):
         
         self.system = platform.system()
-        
-        self.database_path = database_path
         self.src_path = src_path
-        self.build_command = build_command
         self.language = language
-        self.result_dir = tempfile_dir+'temp/'
-        self.query_file_dir = tempfile_dir+'query/'
-        # if not os.path.exists(self.query_file_dir):
-        #     os.mkdir(self.query_file_dir)
-        # if not os.path.exists(self.result_dir):
-        #     os.mkdir(self.result_dir)
     
 
     def run_cmd(self, cmd: str, cwd: Optional[str] = None, timeout: int = 300) -> Dict[str, Any]:
@@ -76,49 +67,40 @@ class AgentTools:
             exit(1)
 
 
-    def codeql_create_database(self):
-        '''
-        Build database for CodeQL. 
-        '''
-        try:
+    # def codeql_create_database(self):
+    #     '''
+    #     Build database for CodeQL. 
+    #     '''
+    #     try:
 
-            result = subprocess.run([
-                'codeql', 'database', 'create', self.database_path, 
-                '--language='+self.language, 
-                '--source-root', self.src_path, 
-                '--command', self.build_command,
-                '--overwrite'
-            ], capture_output=True, text=True, timeout=300)
-            return{'database_path': self.database_path}
+    #         result = subprocess.run([
+    #             'codeql', 'database', 'create', self.database_path, 
+    #             '--language='+self.language, 
+    #             '--source-root', self.src_path, 
+    #             '--command', self.build_command,
+    #             '--overwrite'
+    #         ], capture_output=True, text=True, timeout=300)
+    #         return{'database_path': self.database_path}
 
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+    #     except Exception as e:
+    #         return {"success": False, "error": str(e)}
 
-    def execute_query(self, query_name):
-        query_path = self.query_file_dir+query_name+'.ql'
-        try:
-            result = subprocess.run([
-                'codeql', 'query', 'run', query_path, 
-                '--database='+self.database_path,
-                '--output='+self.result_dir+'result_'+query_name+'.bqrs'
-            ], capture_output=True, text=True)
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-        try:
-            result = subprocess.run([
-                'codeql', 'bqrs', 'decode', self.result_dir+'result_'+query_name+'.bqrs'
-            ], capture_output=True, text=True)
-            with open(self.result_dir+'result_'+query_name+'.txt', 'w') as f:
-                f.write(result.stdout)
-            f.close()
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-
-
-
-if __name__ == '__main__':
-    at = AgentTools(src_path='/home/shuyang/Project/example', 
-                    database_path='test/database_test', 
-                    build_command='g++ test.cpp -o test', 
-                    tempfile_dir='CodeQL/')
-    print(at.grep_in_directory(pattern="delete", dir="."))
+    # def execute_query(self, query_name):
+    #     query_path = self.query_file_dir+query_name+'.ql'
+    #     try:
+    #         result = subprocess.run([
+    #             'codeql', 'query', 'run', query_path, 
+    #             '--database='+self.database_path,
+    #             '--output='+self.result_dir+'result_'+query_name+'.bqrs'
+    #         ], capture_output=True, text=True)
+    #     except Exception as e:
+    #         return {"success": False, "error": str(e)}
+    #     try:
+    #         result = subprocess.run([
+    #             'codeql', 'bqrs', 'decode', self.result_dir+'result_'+query_name+'.bqrs'
+    #         ], capture_output=True, text=True)
+    #         with open(self.result_dir+'result_'+query_name+'.txt', 'w') as f:
+    #             f.write(result.stdout)
+    #         f.close()
+    #     except Exception as e:
+    #         return {"success": False, "error": str(e)}

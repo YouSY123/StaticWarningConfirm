@@ -17,7 +17,7 @@ Your task is to analyze and return the conditions which are used to judge the co
 The conditions you return should be:
 (1) independent from each other. That is, no condition can involve any other condition
 (2) detailed in object and position so that other agents can easily understand
-You can use the following function tools to help you(When passing directory address, use absolute path):
+You can use the following function tools to help you:
 (1) list_files()
     list the file structure of the whole project directory. 
     parameters: The function does not need any parameter
@@ -30,9 +30,11 @@ You can use the following function tools to help you(When passing directory addr
     search a string pattern in a directory
     parameters: pattern, dir
     call example: grep_in_directory(pattern='malloc', dir='src/')
-Before you start to analyze, first call examples_for_common() to learn condition generation. Then, you can call the following to get more examples.
-(1) examples_for_use_after_free()
-(2) examples_for_double_free()
+Before you start to analyze, first call get_example(type: str) to get examples for how to generate conditions. The type can be:
+(1) "common"
+(2) "use-after-free"
+(3) "double-free"
+You must call get_example(type = "common"). Then you should call get_example with other types if you want for at least one time.
 
 You should combine the warning information and the confirmation conditions in JSON format and output it. 
 Please note that the JSON format must be("```json" and "```" are necessary in your answer):
@@ -84,7 +86,7 @@ def create_condition_analyzer(tools:list):
       description = '',
       system_message = '''
 You need to cooperate with others to confirm the correctness of the warnings provided by a static code analyzer. You will be given JSON format information of the program directory, warning details and a comfirmation condition. Your job is to judge whether the condition is true or false. 
-You can use the following function tools to help you(When passing directory address, use absolute path):
+You can use the following function tools to help you:
 (1) list_files()
     list the file structure of the whole project directory. 
     parameters: The function does not need any parameter
@@ -135,8 +137,7 @@ If you find that the judgment is incorrect, output result and explanation in JSO
 ``` 
 
 Additionally, you need to check the following points:
-(1) The judger need to call tools. If all calls to tools are failed, the judgment is incorrect.
-(2) The judger need to get enough information from source code. If it did not get enough information but made a judgment, the judgment is incorrect.
+(1) The judger should get enough imformation from tools. If some key information is missing due to tool call failure, the result is incorrect.
 
 Then output TERMINATE
 '''
@@ -157,6 +158,7 @@ You need to check the conditions based on the following points:
 (1) All conditions should be independent from each other. That is, no condition can involve any other condition.
 (2) The warning is true positive if and only if all conditions are true.
 (3) The conditions correctly correspond to the warning information(e.g., variable name, line number, type).
+(4) The condition generator should get enough imformation from tools. If some key information is missing due to tool call failure, the result is incorrect.
 Output your checking result in JSON format("```json" and "```" are necessary):
 ```json
 {"check_result": "Correct/Incorrect", "explanation": "..."}

@@ -1,3 +1,0 @@
-name: static-analysis-warnings-confirmation
-dependencies:
-  codeql/cpp-all: "*"

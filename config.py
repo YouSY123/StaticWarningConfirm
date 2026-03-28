@@ -7,9 +7,10 @@ with open('llm_api.json', 'r') as f:
     f.close()
 API_KEY = llm_api_info['api_key']
 BASE_URL = llm_api_info['base_url']
+MODEL = llm_api_info['model']
 
 default_client = OpenAIChatCompletionClient(
-    model = 'gpt-5-mini-2025-08-07',
+    model = MODEL,
     api_key = API_KEY,
     base_url = BASE_URL,
     timeout = 600,
@@ -29,4 +30,4 @@ PRINT_LOG = True
 CONDITION_VOTE_TIMES = 3
 CONDITION_JUDGE_MAX_TURN = 1
 CONDITION_CHECK_MAX_TURN = 3
-CONDITION_GENERATE_MAX_TURN = 3
+CONDITION_GENERATE_MAX_TURN = 5

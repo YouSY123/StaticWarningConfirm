@@ -28,14 +28,34 @@ def write_result(content:str, result_path:str):
 
 class StaticAnalysisWarningsConfirmation:
 
-    def __init__(self, root_dir, make_cmd, static_analysis_result, database_path, codeql_result_dir, log_path, result_path):
+    def __init__(self, root_dir, static_analysis_result, log_path, result_path):
 
         self.root_dir = root_dir
-        self.make_cmd = make_cmd
         self.sar = static_analysis_result
-        self.agent_tools = AgentTools(src_path=root_dir, database_path=database_path, build_command=make_cmd, tempfile_dir=codeql_result_dir)
+        self.agent_tools = AgentTools(src_path=root_dir)
         self.log_path = log_path
         self.result_path = result_path
+
+        from config import PRINT_LOG
+
+        if PRINT_LOG:
+            try:
+                with open(self.log_path, 'w') as f:
+                    f.write('')
+                f.close()
+            except Exception as e:
+                print("Failed to initialize log file.")
+                PRINT_LOG = False
+
+        try:
+            with open(self.result_path, 'w') as f:
+                f.write('')
+            f.close()
+        except Exception as e:
+            print("Failed to initialize result file.")
+            exit("Failed to initialize result file.")
+
+
 
         def list_files():
             return self.agent_tools.list_files()
@@ -52,10 +72,8 @@ class StaticAnalysisWarningsConfirmation:
 
     async def generate_conditions(self, input_info:str):
         # create tools for the agent
-        from fewshot import get_use_after_free_example, get_double_free_example, get_common_example
-        examples_for_common = FunctionTool(func=get_common_example, name='examples_for_common', description='Get examples for common conditions.')
-        examples_for_uaf = FunctionTool(func=get_use_after_free_example, name='examples_for_use_after_free', description='Get examples for use-after-free conditions.')
-        examples_for_df = FunctionTool(func=get_double_free_example, name='examples_for_double_free', description='Get examples for double-free conditions.')
+        from fewshot import get_example
+        get_example_func = FunctionTool(func=get_example, name='get_example', description='')
 
         # create agent
         from config import CONDITION_GENERATE_MAX_TURN
@@ -72,9 +90,7 @@ class StaticAnalysisWarningsConfirmation:
                 condition_generator = create_condition_generator([self.tool_list_files, 
                                                                 self.tool_view_one_file, 
                                                                 self.tool_grep_in_directory,
-                                                                examples_for_uaf, 
-                                                                examples_for_df, 
-                                                                examples_for_common])
+                                                                get_example_func])
                 team = RoundRobinGroupChat(
                     participants = [condition_generator],
                     max_turns = 100,
@@ -329,17 +345,8 @@ Condition judgment to be checked:
 
     async def start(self):
 
-        if PRINT_LOG:
-            with open(self.log_path, 'w') as f:
-                f.write('')
-            f.close()
-            print_client_log('Input', f'Root directory: {self.root_dir}\nMake command: {self.make_cmd}\nAnalysis result:\n{self.sar}\n', self.log_path)
-
-        with open(self.result_path, 'w') as f:
-            f.write('')
-        f.close()
         # get prompt for the first agent to generate the conditions
-        generate_prompt = 'The directory of the project: ' + self.root_dir + '\nThe result of the static analyzer:\n' + self.sar
+        generate_prompt ='The result of the static analyzer:\n' + self.sar
         
         # generate and extract the conditions
         conditions_json = await self.generate_conditions(generate_prompt)
@@ -354,7 +361,6 @@ Condition judgment to be checked:
                         confirmation = warning["Confirmation conditions"][c]
                         new_prompt_json = deepcopy(warning)
                         new_prompt_json["Confirmation conditions"] = confirmation
-                        new_prompt_json['Project path'] = self.root_dir
                         judger_prompt.append(json.dumps(new_prompt_json))
                 else:
                     print('Wrong format of conditions')
@@ -398,34 +404,3 @@ results:
         write_result(f"\nCondition judgment: {json.dumps(result, indent=4)}\n", self.result_path)
 
         return final_results
-            
-
-if __name__ == '__main__':
-    # dir: project root directory 最好是本地绝对路径
-    # command: project build command
-    # result: result of the static analysis
-    # db_path: the path to save the database of CodeQL   目前还没有使用CodeQL的工具函数
-    # codeql_result_dir: the path to save the result files of CodeQL
-
-    root_dir = "/home/shuyang/Project/results/double-free1/"
-    log_path_base = "/home/shuyang/Project/"
-
-    static_analysis_result = '''\
-test.cpp:16:9: warning: Attempt to free released memory [cplusplus.NewDelete]
-   16 |         delete []test;
-      |         ^~~~~~~~~~~~~
-1 warning generated.
-'''
-
-
-    sawc = StaticAnalysisWarningsConfirmation(
-            root_dir=root_dir,
-            make_cmd="", 
-            static_analysis_result=static_analysis_result,
-            database_path="",
-            codeql_result_dir="",
-            log_path=f"{log_path_base}log.txt",
-            result_path=f"{log_path_base}result.txt"
-        )
-
-    result = asyncio.run(sawc.start())

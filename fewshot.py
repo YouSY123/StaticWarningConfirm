@@ -1,15 +1,16 @@
 # examples for agents
 
-def get_common_example():
-    return get_example("common_example", "common")
+def get_example(type: str) -> str:
+    if type == "common":
+        return get_example_base("common_example", "common")
+    elif type == "use-after-free":
+        return get_example_base('uaf1', 'use-after-free')
+    elif type == "double-free":
+        return get_example_base('df1', 'double-free')
+    else:
+        return "Type not supported. Supported types: common, use-after-free, double-free."
 
-def get_use_after_free_example():
-    return get_example('uaf1', 'use-after-free')
-
-def get_double_free_example():
-    return get_example('df1', 'double-free')
-
-def get_example(file_name, warning_name):
+def get_example_base(file_name, warning_name):
 
     with open(f'fewshot/{file_name}/{file_name}.cpp', 'r') as f:
         example_code = f.read()
