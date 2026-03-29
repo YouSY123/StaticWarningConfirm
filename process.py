@@ -60,7 +60,7 @@ class StaticAnalysisWarningsConfirmation:
             '''List file structure in the src directory'''
             return self.agent_tools.list_files()
         @tool
-        def view_one_file(file_path:str, start_line:int = 1, end_line:Union[int, str] = '\\$'):
+        def view_one_file(file_path:str, start_line:int = 1, end_line:int = 0):
             '''View a file in the src directory
 
                 Args:
@@ -71,7 +71,7 @@ class StaticAnalysisWarningsConfirmation:
             '''
             return self.agent_tools.view_one_file(file_path, start_line, end_line)
         @tool
-        def grep_in_directory(pattern:str, dir:str):
+        def search_in_directory(pattern:str, dir:str):
             '''Find string in a directory
 
                 Args:
@@ -79,7 +79,7 @@ class StaticAnalysisWarningsConfirmation:
                     pattern: the string pattern you want to find
                     dir: the directory you want to search in
             '''
-            return self.agent_tools.grep_in_directory(pattern, dir)
+            return self.agent_tools.search_in_directory(pattern, dir)
 
         # create agent
         from config import CONDITION_GENERATE_MAX_TURN
@@ -94,7 +94,7 @@ class StaticAnalysisWarningsConfirmation:
             # generate conditions
             try: 
 
-                condition_generator = create_condition_generator([get_example, list_files, view_one_file, grep_in_directory])
+                condition_generator = create_condition_generator([get_example, list_files, view_one_file, search_in_directory])
 
                 result = await condition_generator.ainvoke(
                     {"messages": [{"role": "user", "content": input_info + checker_info}]}
@@ -107,7 +107,7 @@ class StaticAnalysisWarningsConfirmation:
             for message in result["messages"]:
                 if hasattr(message, "content"):
                     if message.content != "":
-                        dialogue += (str(message.content) + "\n\n")
+                        dialogue += (str((message.content).replace("\n", "\\n")) + "\n\n")
                 if hasattr(message, "tool_calls"):
                     if message.tool_calls != []:
                         dialogue += (str(message.tool_calls) + "\n\n")
@@ -154,13 +154,13 @@ class StaticAnalysisWarningsConfirmation:
             except Exception as e:
 
                 write_result("Failed to extract conditions as JSON.\n", self.result_path)
-                exit("Failed to extract conditions as JSON.")
+                return {"result": "failed"}
 
             return conditions
         
         else:
             write_result(f"Condition generation failed.\nAll {CONDITION_GENERATE_MAX_TURN} tries did not pass the check.\n", self.result_path)
-            exit("Condition generation failed.")
+            return {"result": "failed"}
     
 
     def extract_json(self, string_info:str):
@@ -216,7 +216,7 @@ class StaticAnalysisWarningsConfirmation:
                 for message in result["messages"]:
                     if hasattr(message, "content"):
                         if message.content != "":
-                            dialogue += (str(message.content) + "\n\n")
+                            dialogue += (str((message.content).replace("\n", "\\n")) + "\n\n")
                     if hasattr(message, "tool_calls"):
                         if message.tool_calls != []:
                             dialogue += (str(message.tool_calls) + "\n\n")
@@ -334,6 +334,9 @@ class StaticAnalysisWarningsConfirmation:
         
         # generate and extract the conditions
         conditions_json = await self.generate_conditions(generate_prompt)
+        if "result" in conditions_json:
+            if conditions_json["result"] == "failed":
+                return ["Condition generation failed."]
 
         # extract the conditions and get prompts for each judging agent
         judger_prompt = []
@@ -348,10 +351,10 @@ class StaticAnalysisWarningsConfirmation:
                         judger_prompt.append(json.dumps(new_prompt_json))
                 else:
                     print('Wrong format of conditions')
-                    return
+                    return ["Conditions format error."]
         else:
             print('Wrong format of conditions')
-            return
+            return ["Conditions format error."]
 
         # send prompts to agents by asyncio
         # create agent
@@ -360,7 +363,7 @@ class StaticAnalysisWarningsConfirmation:
             '''List file structure in the src directory'''
             return self.agent_tools.list_files()
         @tool
-        def view_one_file(file_path:str, start_line:int = 1, end_line:Union[int, str] = '\\$'):
+        def view_one_file(file_path:str, start_line:int = 1, end_line:int = 0):
             '''View a file in the src directory
 
                 Args:
@@ -371,7 +374,7 @@ class StaticAnalysisWarningsConfirmation:
             '''
             return self.agent_tools.view_one_file(file_path, start_line, end_line)
         @tool
-        def grep_in_directory(pattern:str, dir:str):
+        def search_in_directory(pattern:str, dir:str):
             '''Find string in a directory
 
                 Args:
@@ -379,9 +382,9 @@ class StaticAnalysisWarningsConfirmation:
                     pattern: the string pattern you want to find
                     dir: the directory you want to search in
             '''
-            return self.agent_tools.grep_in_directory(pattern, dir)
+            return self.agent_tools.search_in_directory(pattern, dir)
         
-        judge_tasks = [self.judge_conditions(json_info, [list_files, view_one_file, grep_in_directory], idx+1) for idx, json_info in enumerate(judger_prompt)]
+        judge_tasks = [self.judge_conditions(json_info, [list_files, view_one_file, search_in_directory], idx+1) for idx, json_info in enumerate(judger_prompt)]
         llm_results = await asyncio.gather(*judge_tasks)
         result = []
         result_ptr = 0

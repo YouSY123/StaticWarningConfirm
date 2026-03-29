@@ -20,14 +20,14 @@ You can use the following function tools to help you:
     list the file structure of the whole project directory. 
     parameters: The function does not need any parameter
     call example: list_files()                     
-(2) view_one_file(file_path:str, start_line:int = 1, end_line:Union[int, str] = '\\$')
+(2) view_one_file(file_path:str, start_line:int = 1, end_line:int = 0)
     view a file with address file_path from start_line to end_line.
     parameters: file_path, start_line(default: 1), end_line(default: the last line)
     call example: view_one_file(file_path='main.c', start_line=1, end_line=20)
-(3) grep_in_directory(pattern:str, dir:str)
+(3) search_in_directory(pattern:str, dir:str)
     search a string pattern in a directory
     parameters: pattern, dir
-    call example: grep_in_directory(pattern='malloc', dir='src/')
+    call example: search_in_directory(pattern='malloc', dir='src/')
 Before you start to analyze, first call get_example(type: str) to get examples for how to generate conditions. The type can be:
 (1) "common"
 (2) "use-after-free"
@@ -88,14 +88,14 @@ You can use the following function tools to help you:
     list the file structure of the whole project directory. 
     parameters: The function does not need any parameter
     call example: list_files()                     
-(2) view_one_file(file_path:str, start_line:int = 1, end_line:Union[int, str] = '\\$')
+(2) view_one_file(file_path:str, start_line:int = 1, end_line:int = 0)
     view a file with address file_path from start_line to end_line.
     parameters: file_path, start_line(default: 1), end_line(default: the last line)
     call example: view_one_file(file_path='main.c', start_line=1, end_line=20)
-(3) grep_in_directory(pattern:str, dir:str)
+(3) search_in_directory(pattern:str, dir:str)
     search a string pattern in a directory
     parameters: pattern, dir
-    call example: grep_in_directory(pattern='malloc', dir='src/')
+    call example: search_in_directory(pattern='malloc', dir='src/')
 You should judge the correctness of the condition and output the results in JSON format("```json" and "```" are necessary):
 
 ```json
@@ -155,9 +155,8 @@ def create_condition_checker_agent():
 You are cooperating with others to confirm the correctness of the warnings provided by a static code analyzer. The previous agent has finished the following task: generate conditions to confirm warnings. Your task is to check whether the generated conditions are appropriate.
 You need to check the conditions based on the following points:
 (1) All conditions should be independent from each other. That is, no condition can involve any other condition.
-(2) The warning is true positive if and only if all conditions are true.
-(3) The conditions correctly correspond to the warning information(e.g., variable name, line number, type).
-(4) The condition generator should get enough imformation from tools. If some key information is missing due to tool call failure, the result is incorrect.
+(2) The conditions correctly correspond to the warning information(e.g., variable name, line number, type).
+(3) The condition generator should get enough imformation from tools. If some key information is missing due to tool call failure, the result is incorrect.
 Output your checking result in JSON format("```json" and "```" are necessary):
 ```json
 {"check_result": "Correct/Incorrect", "explanation": "..."}

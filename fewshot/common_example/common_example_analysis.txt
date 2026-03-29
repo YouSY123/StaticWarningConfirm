@@ -34,7 +34,7 @@ return:
     24      delete[] b;
     25  }
 
-call function: grep_in_directory(pattern="delete", dir=".")
+call function: search_in_directory(pattern="delete", dir=".")
 return: 
 ./example.cpp:9:    delete[] p;
 ./example.cpp:23:    delete[] a;

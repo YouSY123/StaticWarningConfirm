@@ -1,6 +1,7 @@
 from process import StaticAnalysisWarningsConfirmation
 from datetime import datetime
 import asyncio
+import json
 
 def evaluate_once(root_dir, static_analysis_result, log_path, result_path, project_name, ground_truth:bool, statistics_file):
 
@@ -37,12 +38,19 @@ def evaluate_once(root_dir, static_analysis_result, log_path, result_path, proje
             return None
         
 
-print(evaluate_once(
-    root_dir="/home/shuyang/Project/Static-Inspection-bugs/file-check", 
-    static_analysis_result="Potential double free\nFirst: src/buffer.c:90\nSecond: src/buffer.c:81", 
-    log_path="../log.txt", 
-    result_path="../result.txt",
-    project_name="project", 
-    ground_truth=False,
-    statistics_file="../statistics.txt"
-))
+def eval_primevul_dataset():
+
+    with open("../final_data.json", "r") as f:
+        dataset = json.load(f)
+    f.close()
+
+
+    print(evaluate_once(
+        root_dir="/home/shuyang/Project/Static-Inspection-bugs/file-check", 
+        static_analysis_result="Potential double free\nFirst: src/buffer.c:90\nSecond: src/buffer.c:81", 
+        log_path="../log.txt", 
+        result_path="../result.txt",
+        project_name="project", 
+        ground_truth=False,
+        statistics_file="../statistics.txt"
+    ))
