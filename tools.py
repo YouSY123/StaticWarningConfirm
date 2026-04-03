@@ -26,11 +26,21 @@ class AgentTools:
         return final_path
         
 
-    def list_files(self):
-        '''List file structure in the src directory'''
+    def list_files(self, path:str):
+        '''List file structure in the directory
+
+            Args: 
+
+                path: the directory to list file, using relative path to the project directory
+        '''
+
+        try: 
+            path = self.__safe__dir__(path)
+        except ValueError as e:
+            return f"Error: {e}"
 
         if self.system == "Linux":
-            cmd = ["ls", "-R"]
+            cmd = ["ls"]
         else:
             print("Only Linux for now")
             return
@@ -43,13 +53,12 @@ class AgentTools:
                 capture_output=True,
                 text=True,
                 shell=False, 
-                cwd = self.src_path
+                cwd = path
             )
             return result.stdout
 
         except Exception as e:
-            print(f"Error executing command: {e}")
-            return
+            return f"Error executing command: {e}"
 
 
 
@@ -66,8 +75,7 @@ class AgentTools:
         try: 
             file_path = self.__safe__dir__(file_path)
         except ValueError as e:
-            print(f"Error: {e}")
-            return
+            return f"Error: {e}"
         
         if end_line == 0:
             awk_script = f"NR >= {start_line} {{ printf \"%6d | %s\\n\", NR, $0 }}"
@@ -91,8 +99,7 @@ class AgentTools:
             )
             return result.stdout
         except Exception as e:
-            print(f"Error executing command: {e}")
-            return
+            return f"Error executing command: {e}"
 
 
     def search_in_directory(self, pattern:str, dir:str):
@@ -107,11 +114,10 @@ class AgentTools:
         try:
             dir = self.__safe__dir__(dir)
         except ValueError as e:
-            print(f"Error: {e}")
-            return
+            return f"Error: {e}"
 
         if self.system == "Linux":
-            cmd = ["grep", "-r", "-n", pattern, dir]
+            cmd = ["grep", "-r", "-n", pattern, "."]
         else:
             print("Only Linux for now")
             return
@@ -124,16 +130,9 @@ class AgentTools:
                 capture_output=True,
                 text=True,
                 shell=False, 
-                cwd = self.src_path
+                cwd = dir
             )
             return result.stdout
 
         except Exception as e:
-            print(f"Error executing command: {e}")
-            return
-        
-
-
-if __name__ == "__main__":
-    tools = AgentTools(src_path="/home/shuyang/Project/results")
-    print(tools.view_one_file("double-free1/test.cpp", 1, 10))
+            return f"Error executing command: {e}"

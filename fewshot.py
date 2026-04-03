@@ -7,7 +7,7 @@ def get_example(type: str) -> str:
     """Get example for condition generation. 
 
     Args: 
-        type: The type of example, containing "common", "use-after-free", "double-free"
+        type: The type of example, containing "common", "use-after-free", "double-free", "buffer-overflow"
     """
 
     if type == "common":
@@ -16,6 +16,8 @@ def get_example(type: str) -> str:
         return get_example_base('uaf1', 'use-after-free')
     elif type == "double-free":
         return get_example_base('df1', 'double-free')
+    elif type == "buffer-overflow":
+        return get_example_base('overflow1', 'buffer-overflow')
     else:
         return "Type not supported. Supported types: common, use-after-free, double-free."
 

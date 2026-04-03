@@ -1,0 +1,2 @@
+line9: b[a] = 1;
+description: the value of "a" is not validated and may exceed the bound of "b[]" 

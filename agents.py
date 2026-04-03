@@ -1,4 +1,4 @@
-from config import default_model
+from config import default_model, judger_model
 from langchain.agents import create_agent
 
 def create_condition_generator(tools:list):
@@ -15,23 +15,15 @@ Your task is to analyze and return the conditions which are used to judge the co
 The conditions you return should be:
 (1) independent from each other. That is, no condition can involve any other condition
 (2) detailed in object and position so that other agents can easily understand
-You can use the following function tools to help you:
-(1) list_files()
-    list the file structure of the whole project directory. 
-    parameters: The function does not need any parameter
-    call example: list_files()                     
+You can use the following function tools to help you:(You'd better only use them in the immediate parent directory of the target file, not in any ancestor directory, for the result of using them in an ancestor directory can be too large)
+(1) list_files(path:str)                    
 (2) view_one_file(file_path:str, start_line:int = 1, end_line:int = 0)
-    view a file with address file_path from start_line to end_line.
-    parameters: file_path, start_line(default: 1), end_line(default: the last line)
-    call example: view_one_file(file_path='main.c', start_line=1, end_line=20)
 (3) search_in_directory(pattern:str, dir:str)
-    search a string pattern in a directory
-    parameters: pattern, dir
-    call example: search_in_directory(pattern='malloc', dir='src/')
 Before you start to analyze, first call get_example(type: str) to get examples for how to generate conditions. The type can be:
 (1) "common"
 (2) "use-after-free"
 (3) "double-free"
+(4) "buffer-overflow"
 You must call get_example(type = "common"). Then you should call get_example with other types if you want for at least one time.
 
 You should combine the warning information and the confirmation conditions in JSON format and output it. 
@@ -79,23 +71,14 @@ def create_condition_analyzer(tools:list):
   '''
   return create_agent(
       name = 'Condition_analyzer', 
-      model = default_model, 
+      model = judger_model, 
       tools = tools,
       system_prompt = '''
 You need to cooperate with others to confirm the correctness of the warnings provided by a static code analyzer. You will be given JSON format information of the program directory, warning details and a comfirmation condition. Your job is to judge whether the condition is true or false. 
-You can use the following function tools to help you:
-(1) list_files()
-    list the file structure of the whole project directory. 
-    parameters: The function does not need any parameter
-    call example: list_files()                     
+You can use the following function tools to help you:(You'd better only use them in the immediate parent directory of the target file, not in any ancestor directory, for the result of using them in an ancestor directory can be too large)
+(1) list_files(path:str)                  
 (2) view_one_file(file_path:str, start_line:int = 1, end_line:int = 0)
-    view a file with address file_path from start_line to end_line.
-    parameters: file_path, start_line(default: 1), end_line(default: the last line)
-    call example: view_one_file(file_path='main.c', start_line=1, end_line=20)
 (3) search_in_directory(pattern:str, dir:str)
-    search a string pattern in a directory
-    parameters: pattern, dir
-    call example: search_in_directory(pattern='malloc', dir='src/')
 You should judge the correctness of the condition and output the results in JSON format("```json" and "```" are necessary):
 
 ```json
@@ -134,10 +117,10 @@ If you find that the judgment is incorrect, output result and explanation in JSO
 {"check_result": "Incorrect", "explanation": "..."}
 ``` 
 
-Do not output anything else. The explanation should be brief. If result is correct, explanation is not needed.
+Do not output anything else. You should point out what is wrong and how to improve in the explanation. If result is correct, explanation is not needed.
 
 Additionally, you need to check the following points:
-(1) The judger should get enough imformation from tools. If some key information is missing due to tool call failure, the result is incorrect.
+(1) If the condition judger did not get information from the source code due to tool call failure, the judgment is incorrect. 
 
 Then output TERMINATE
 '''
@@ -154,14 +137,15 @@ def create_condition_checker_agent():
       system_prompt = '''
 You are cooperating with others to confirm the correctness of the warnings provided by a static code analyzer. The previous agent has finished the following task: generate conditions to confirm warnings. Your task is to check whether the generated conditions are appropriate.
 You need to check the conditions based on the following points:
-(1) All conditions should be independent from each other. That is, no condition can involve any other condition.
-(2) The conditions correctly correspond to the warning information(e.g., variable name, line number, type).
-(3) The condition generator should get enough imformation from tools. If some key information is missing due to tool call failure, the result is incorrect.
+(1) Conditions cannot involve each other.
+(2) The conditions correctly correspond to the warning information(e.g. type, description). The line number in the warning may be not accurate, so if the conditions correspond to the function containing the line, they are correct.
+(3) If the condition generator did not get information from the source code due to tool call failure, the generation is incorrect. 
+Attention: Focus on checking the overall structure and logic, pay less attention to the concrete information.
 Output your checking result in JSON format("```json" and "```" are necessary):
 ```json
 {"check_result": "Correct/Incorrect", "explanation": "..."}
 ```
-Do not output anything else. The explanation should be brief. If result is correct, explanation is not needed.
+Do not output anything else. You should point out what is wrong and how to improve in the explanation. If result is correct, explanation is not needed.
 Then output TERMINATE
 '''
   )

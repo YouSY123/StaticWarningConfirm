@@ -1,6 +1,6 @@
 First we use tools to get information about the source code:
 
-call function: list_files()
+call function: list_files(".")
 return: 
 .:
 example.cpp

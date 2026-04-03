@@ -1,0 +1,27 @@
+First we search for where "a" is assigned:
+6       std::cin >> a;
+"a" is assigned by input
+We should confirm whether "a" has been checked before "b[a] = 1;"
+The conditions:
+
+```json
+{
+  "Files": [
+    "overflow.cpp"
+  ],
+  "Warning information":
+  {
+    "1":
+    {
+      "File name": "overflow.cpp",
+      "Type": "buffer overflow",
+      "Variable name": "b",
+      "Line number": 9,
+      "Confirmation conditions": {
+        "1": "Between the assignment overflow.cpp:6:"std::cin >> a;" and overflow.cpp:9:"b[a] = 1;", no bounds checking of "a" is performed",
+        "2": ""a" is assigned by input stream in overflow.cpp:6:"std::cin >> a;", so it can have any value"
+      }
+    }
+  }
+}
+```

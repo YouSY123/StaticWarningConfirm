@@ -56,9 +56,16 @@ class StaticAnalysisWarningsConfirmation:
         from fewshot import get_example
 
         @tool
-        def list_files():
-            '''List file structure in the src directory'''
-            return self.agent_tools.list_files()
+        def list_files(path:str):
+            '''List file structure in the directory
+
+            Args: 
+
+                path: the directory to list file, using relative path to the project directory
+
+            You'd better only use it in the immediate parent directory of the target file, not in any ancestor directory, for the result of using it in an ancestor directory can be too large
+            '''
+            return self.agent_tools.list_files(path)
         @tool
         def view_one_file(file_path:str, start_line:int = 1, end_line:int = 0):
             '''View a file in the src directory
@@ -78,6 +85,8 @@ class StaticAnalysisWarningsConfirmation:
 
                     pattern: the string pattern you want to find
                     dir: the directory you want to search in
+
+                You'd better only use it in the immediate parent directory of the target file, not in any ancestor directory, for the result of using it in an ancestor directory can be too large
             '''
             return self.agent_tools.search_in_directory(pattern, dir)
 
@@ -97,17 +106,19 @@ class StaticAnalysisWarningsConfirmation:
                 condition_generator = create_condition_generator([get_example, list_files, view_one_file, search_in_directory])
 
                 result = await condition_generator.ainvoke(
-                    {"messages": [{"role": "user", "content": input_info + checker_info}]}
+                    {"messages": [{"role": "user", "content": input_info + checker_info}]},
+                    {"recursion_limit": 50}
                 )
 
             except Exception as e:
+                print(e)
                 continue
 
             dialogue = ''
             for message in result["messages"]:
                 if hasattr(message, "content"):
-                    if message.content != "":
-                        dialogue += (str((message.content).replace("\n", "\\n")) + "\n\n")
+                    if str(message.content) != "":
+                        dialogue += (str((message.content)).replace("\n", "\\n") + "\n\n")
                 if hasattr(message, "tool_calls"):
                     if message.tool_calls != []:
                         dialogue += (str(message.tool_calls) + "\n\n")
@@ -121,16 +132,17 @@ class StaticAnalysisWarningsConfirmation:
                 checker_prompt = f"Condition generation process and result:\n{dialogue}"
 
                 checker_result = await checker.ainvoke(
-                    {"messages": [{"role": "user", "content": checker_prompt}]}
+                    {"messages": [{"role": "user", "content": checker_prompt}]},
+                    {"recursion_limit": 50}
                 )
 
             except Exception as e:
                 continue
 
             
-            log_info += f"Checker for condition generation try {turn+1}:\n" + checker_result["messages"][-1].content + "\n\n"
+            log_info += f"Checker for condition generation try {turn+1}:\n" + str(checker_result["messages"][-1].content) + "\n\n"
 
-            checker_result_json = self.extract_json(checker_result["messages"][-1].content)
+            checker_result_json = self.extract_json(str(checker_result["messages"][-1].content))
 
             if "check_result" in checker_result_json:
                 if checker_result_json['check_result'] == 'Correct':
@@ -141,6 +153,9 @@ class StaticAnalysisWarningsConfirmation:
                     log_info += f"Generation try {turn+1} result: Incorrect.\n\n"
                     if "explanation" in checker_result_json:
                         checker_info = "\n\nYou have generated conditions for some times, but the checker found out that the conditions have something wrong: \n" + checker_result_json['explanation']
+                        last_generation = "\n\nThe conditions you generate before:\n" + str(result["messages"][-1].content)
+                        checker_info += last_generation
+
 
         if PRINT_LOG:
             print_client_log('Condition Generator', log_info, self.log_path)
@@ -148,7 +163,7 @@ class StaticAnalysisWarningsConfirmation:
         if generate_pass:
             try:
 
-                conditions = self.extract_json(result["messages"][-1].content)
+                conditions = self.extract_json(str(result["messages"][-1].content))
                 write_result(f"Conditions:\n{json.dumps(conditions, indent=4)}", self.result_path)
                 
             except Exception as e:
@@ -159,7 +174,7 @@ class StaticAnalysisWarningsConfirmation:
             return conditions
         
         else:
-            write_result(f"Condition generation failed.\nAll {CONDITION_GENERATE_MAX_TURN} tries did not pass the check.\n", self.result_path)
+            write_result(f"Failed to generate conditions in {CONDITION_GENERATE_MAX_TURN} times.\n", self.result_path)
             return {"result": "failed"}
     
 
@@ -205,7 +220,8 @@ class StaticAnalysisWarningsConfirmation:
                     condition_analyzer = create_condition_analyzer(tools)
 
                     result = await condition_analyzer.ainvoke(
-                        {"messages": [{"role": "user", "content": json_info + checker_info}]}
+                        {"messages": [{"role": "user", "content": json_info + checker_info}]},
+                        {"recursion_limit": 50}
                     )
 
                 except Exception as e:
@@ -215,8 +231,8 @@ class StaticAnalysisWarningsConfirmation:
                 dialogue = ''
                 for message in result["messages"]:
                     if hasattr(message, "content"):
-                        if message.content != "":
-                            dialogue += (str((message.content).replace("\n", "\\n")) + "\n\n")
+                        if str(message.content) != "":
+                            dialogue += (str((message.content)).replace("\n", "\\n") + "\n\n")
                     if hasattr(message, "tool_calls"):
                         if message.tool_calls != []:
                             dialogue += (str(message.tool_calls) + "\n\n")
@@ -224,7 +240,7 @@ class StaticAnalysisWarningsConfirmation:
 
                 log_info += f"Judge try {judge_try+1}:\n" + dialogue + "\n\n" 
 
-                result_json = self.extract_json(result["messages"][-1].content)
+                result_json = self.extract_json(str(result["messages"][-1].content))
                 if result_json == 'Error': 
                     log_info += f"Judge try {judge_try+1} result: JSON format error.\n\n"
                     continue
@@ -234,16 +250,17 @@ class StaticAnalysisWarningsConfirmation:
                     checker_prompt = f"Condition confirmation information:\n{json_info}\n\nCondition judgment to be checked:\n{dialogue}"
                     condition_judge_checker = create_condition_judge_checker_agent()
                     checker_result = await condition_judge_checker.ainvoke(
-                        {"messages": [{"role": "user", "content": checker_prompt}]}
+                        {"messages": [{"role": "user", "content": checker_prompt}]},
+                        {"recursion_limit": 50}
                     )
 
                 except Exception as e:
                     result = {"result": "None", "explanation": ""}
                     return result
 
-                log_info += f"Checker for try {judge_try+1}:\n" + checker_result["messages"][-1].content + "\n\n"
+                log_info += f"Checker for try {judge_try+1}:\n" + str(checker_result["messages"][-1].content) + "\n\n"
 
-                checker_result_json = self.extract_json(checker_result["messages"][-1].content)
+                checker_result_json = self.extract_json(str(checker_result["messages"][-1].content))
                 if "check_result" in checker_result_json:
                     if checker_result_json['check_result'] == 'Correct':
                         judge_pass = True
@@ -359,9 +376,16 @@ class StaticAnalysisWarningsConfirmation:
         # send prompts to agents by asyncio
         # create agent
         @tool
-        def list_files():
-            '''List file structure in the src directory'''
-            return self.agent_tools.list_files()
+        def list_files(path:str):
+            '''List file structure in the directory
+
+            Args: 
+
+                path: the directory to list file, using relative path to the project directory
+
+            You'd better only use it in the immediate parent directory of the target file, not in any ancestor directory, for the result of using it in an ancestor directory can be too large
+            '''
+            return self.agent_tools.list_files(path)
         @tool
         def view_one_file(file_path:str, start_line:int = 1, end_line:int = 0):
             '''View a file in the src directory
@@ -381,6 +405,8 @@ class StaticAnalysisWarningsConfirmation:
 
                     pattern: the string pattern you want to find
                     dir: the directory you want to search in
+
+                You'd better only use it in the immediate parent directory of the target file, not in any ancestor directory, for the result of using it in an ancestor directory can be too large
             '''
             return self.agent_tools.search_in_directory(pattern, dir)
         
@@ -405,6 +431,11 @@ class StaticAnalysisWarningsConfirmation:
                 if (list(r.values()))[0] == 'F':
                     condition_result = 'False positive'
                     break
+            for key, r in c.items():
+                if (list(r.values()))[0] == 'Unknown':
+                    condition_result = 'Unknown'
+                    break
+            
             final_results.append(condition_result)
         print_client_log('Final results', str(condition_result), self.log_path)
 

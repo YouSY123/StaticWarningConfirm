@@ -15,13 +15,21 @@ default_model = ChatOpenAI(
     api_key=API_KEY, 
     base_url=BASE_URL,
     timeout=600, 
-    reasoning_effort="none"
+    reasoning_effort = "medium"
+)
+
+judger_model = ChatOpenAI(
+    model=MODEL, 
+    api_key=API_KEY, 
+    base_url=BASE_URL,
+    timeout=600, 
+    reasoning_effort = "low"
 )
 
 # Whether to print log of the clients
 PRINT_LOG = True
 
 CONDITION_VOTE_TIMES = 3
-CONDITION_JUDGE_MAX_TURN = 1
+CONDITION_JUDGE_MAX_TURN = 2
 CONDITION_CHECK_MAX_TURN = 3
 CONDITION_GENERATE_MAX_TURN = 5
