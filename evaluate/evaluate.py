@@ -1,4 +1,4 @@
-from process import StaticAnalysisWarningsConfirmation
+from src.process import StaticAnalysisWarningsConfirmation
 from datetime import datetime
 import asyncio
 import json

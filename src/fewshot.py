@@ -1,25 +1,23 @@
 # examples for agents
 from langchain.tools import tool
 
-@tool
+#@tool
 def get_example(type: str) -> str:
 
     """Get example for condition generation. 
 
     Args: 
-        type: The type of example, containing "common", "use-after-free", "double-free", "buffer-overflow"
+        type: The type of example, containing "common", "use-after-free and double-free", "buffer-overflow"
     """
 
     if type == "common":
         return get_example_base("common_example", "common")
-    elif type == "use-after-free":
-        return get_example_base('uaf1', 'use-after-free')
-    elif type == "double-free":
-        return get_example_base('df1', 'double-free')
+    elif type == "use-after-free and double-free":
+        return get_example_base('uaf1', 'use-after-free') + "\n\n" + get_example_base('df1', 'double-free')
     elif type == "buffer-overflow":
-        return get_example_base('overflow1', 'buffer-overflow')
+        return get_example_base('bof1', 'buffer-overflow')
     else:
-        return "Type not supported. Supported types: common, use-after-free, double-free."
+        return "Type not supported. Supported types: common, use-after-free and double-free, buffer-overflow."
 
 def get_example_base(file_name, warning_name):
 
@@ -52,3 +50,6 @@ Then we try to analyze the code and give conditions for confirming the correctne
 {example_analysis}
 ---------- End of the example ----------
 '''
+
+if __name__ == "__main__":
+    print(get_example("use-after-free and double-free"))

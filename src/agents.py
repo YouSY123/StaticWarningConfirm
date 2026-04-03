@@ -1,4 +1,4 @@
-from config import default_model, judger_model
+from src.config import default_model, judger_model
 from langchain.agents import create_agent
 
 def create_condition_generator(tools:list):

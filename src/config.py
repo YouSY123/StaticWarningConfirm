@@ -2,7 +2,7 @@
 import json
 from langchain_openai import ChatOpenAI
 
-with open('llm_api.json', 'r') as f:
+with open('../llm_api.json', 'r') as f:
     llm_api_info = json.load(f)
     f.close()
 API_KEY = llm_api_info['api_key']
