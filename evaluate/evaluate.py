@@ -1,3 +1,6 @@
+import sys
+sys.path.append(".")
+
 from src.process import StaticAnalysisWarningsConfirmation
 import asyncio
 import json
