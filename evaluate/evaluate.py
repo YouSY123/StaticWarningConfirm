@@ -1,5 +1,4 @@
 from src.process import StaticAnalysisWarningsConfirmation
-from datetime import datetime
 import asyncio
 import json
 import subprocess

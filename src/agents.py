@@ -1,4 +1,4 @@
-from src.config import default_model, judger_model
+from config import default_model, judger_model
 from langchain.agents import create_agent
 
 def create_condition_generator(tools:list):
@@ -21,9 +21,12 @@ You can use the following function tools to help you:(You'd better only use them
 (3) search_in_directory(pattern:str, dir:str)
 Before you start to analyze, first call get_example(type: str) to get examples for how to generate conditions. The type can be:
 (1) "common"
-(2) "use-after-free"
-(3) "double-free"
-(4) "buffer-overflow"
+(2) "use-after-free and double-free"
+(3) "null-pointer-dereference"
+(4) "memory-leak"
+(5) "divided-by-zero"
+(6) "uninitialized-variable"
+(7) "buffer-overflow"
 You must call get_example(type = "common"). Then you should call get_example with other types if you want for at least one time.
 
 You should combine the warning information and the confirmation conditions in JSON format and output it. 

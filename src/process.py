@@ -1,13 +1,13 @@
 from agents import create_condition_analyzer, create_condition_generator, create_condition_judge_checker_agent, create_condition_checker_agent
 import asyncio
-from src.tools import AgentTools
+from tools import AgentTools
 import json
 from copy import deepcopy
 from typing import Union
 from langchain.tools import tool
 
 
-from src.config import PRINT_LOG
+from config import PRINT_LOG
 def print_client_log(title:str, content:str, log_path:str):
     if not PRINT_LOG:
         return
@@ -32,7 +32,7 @@ class StaticAnalysisWarningsConfirmation:
         self.log_path = log_path
         self.result_path = result_path
 
-        from src.config import PRINT_LOG
+        from config import PRINT_LOG
 
         if PRINT_LOG:
             try:
@@ -53,7 +53,7 @@ class StaticAnalysisWarningsConfirmation:
 
     async def generate_conditions(self, input_info:str):
         # create tools for the agent
-        from src.fewshot import get_example
+        from fewshot import get_example
 
         @tool
         def list_files(path:str):
@@ -91,7 +91,7 @@ class StaticAnalysisWarningsConfirmation:
             return self.agent_tools.search_in_directory(pattern, dir)
 
         # create agent
-        from src.config import CONDITION_GENERATE_MAX_TURN
+        from config import CONDITION_GENERATE_MAX_TURN
 
         log_info = ''
         generate_pass = False
@@ -199,13 +199,13 @@ class StaticAnalysisWarningsConfirmation:
     async def judge_conditions(self, json_info, tools:list, index = 0):
 
         # run condition judging agents for several times
-        from src.config import CONDITION_VOTE_TIMES, CONDITION_JUDGE_MAX_TURN
+        from config import CONDITION_VOTE_TIMES, CONDITION_JUDGE_MAX_TURN
 
         judge_cnt = 0
 
         async def judge_one_time():
 
-            from src.config import CONDITION_CHECK_MAX_TURN
+            from config import CONDITION_CHECK_MAX_TURN
 
             log_info = ''
 

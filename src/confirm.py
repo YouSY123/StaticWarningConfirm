@@ -1,4 +1,4 @@
-from src.process import StaticAnalysisWarningsConfirmation
+from process import StaticAnalysisWarningsConfirmation
 import asyncio
 
 def confirm(
@@ -17,3 +17,14 @@ def confirm(
 
     result = asyncio.run(confirmator.start())
     return result[0]
+
+if __name__ == "__main__":
+
+    sar = "Potential Double free\nFirst free at cmd-source-file.c:196\nSecond free at cmd-source-file.c:227"
+
+    confirm(
+        project_dir="/home/shuyang/Project/Static-Inspection-bugs/tmux-check", 
+        static_analysis_result=sar,
+        log_path="../log.txt", 
+        result_path="../result.txt"
+    )
