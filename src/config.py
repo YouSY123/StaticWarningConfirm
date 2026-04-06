@@ -2,7 +2,7 @@
 import json
 from langchain_openai import ChatOpenAI
 
-with open('../llm_api.json', 'r') as f:
+with open('llm_api.json', 'r') as f:
     llm_api_info = json.load(f)
     f.close()
 API_KEY = llm_api_info['api_key']
@@ -15,7 +15,7 @@ default_model = ChatOpenAI(
     api_key=API_KEY, 
     base_url=BASE_URL,
     timeout=600, 
-    reasoning_effort = "medium"
+    reasoning_effort = "high"
 )
 
 judger_model = ChatOpenAI(

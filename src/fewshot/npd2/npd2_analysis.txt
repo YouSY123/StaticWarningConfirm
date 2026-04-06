@@ -1,0 +1,31 @@
+First we find the assignment of n[]:
+25    init(5);
+In function init(), some elements of n[] may be assigned to NULL.
+
+We inspect the code execution paths:
+main() -> line27: for loop -> line30: call print_node -> line21: dereference n[idx]
+
+```json
+{
+  "Files": [
+    "code.cpp"
+  ],
+  "Warning information":
+  {
+    "1":
+    {
+      "File name": ["code.cpp"],
+      "Type": "null pointer dereference",
+      "Variable name": "n[idx]",
+      "Line number": [21],
+      "Confirmation conditions": {
+        "1": "
+            In some execution path:
+            (a) code.cpp:25:'init(5);' will assign some elements of n[] to NULL.
+            (b) in some for loop in code.cpp:27, the function call code.cpp:30:'print_node(a, b);' will execute code.cpp:21:'return n[idx]->value;' and it dereferences the NULL elements in n[].
+            "
+      }
+    }
+  }
+}
+```

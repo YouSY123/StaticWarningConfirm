@@ -1,0 +1,3 @@
+code.cpp:22:8: error: out of bounds access of "buff"
+    buff[idx] = '\0';
+     ^

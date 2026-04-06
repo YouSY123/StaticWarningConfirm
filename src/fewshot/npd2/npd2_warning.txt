@@ -1,0 +1,3 @@
+code.cpp:21:21: error: Null pointer dereference: n[idx] [nullPointer]
+    printf("%d\n", n[idx]->x);
+                    ^

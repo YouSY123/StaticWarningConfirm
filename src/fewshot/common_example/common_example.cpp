@@ -1,25 +1,16 @@
 #include<iostream>
-#include<string.h>
 
-void test(char* p){
-    if(strcmp(p, "correct") == 0){
-        std::cout << "correct" << std::endl;
-        return;
+void foo(char* p, int flag){
+    printf("%s\n", p);
+    if(flag == 1){
+        delete[] p;
     }
-    delete[] p;
-    return;
 }
 
 int main(){
-    
-    char* a = new char[10];
-    char* b = new char[10];
-    std::cin >> a;
-    strcpy(b, "correct");
-
-    test(a);
-    test(b);
-
-    delete[] a;
-    delete[] b;
+    char* str = new char[10];
+    for(int i = 0; i < 3; i++){
+        foo(str, i);
+    }
+    return 0;
 }

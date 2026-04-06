@@ -1,0 +1,31 @@
+The memory leak happens in the function "int handle(int flag)" before line 28, so we inspect line 20-27 for information:
+    Buf *b = create_buf(128);
+    if (!b) return -1;
+
+    if (flag > 0) {
+        b = create_buf(64);
+        if (!b) return -2;
+    }
+"b" is allocated memory by "create_buf" function, and if "flag > 0", "b" is allocated memory twice. If pointer "b" is not freed between the two allocations and there is no alias that is used to free the memory, memory leak happens.
+
+```json
+{
+  "Files": [
+    "code.cpp"
+  ],
+  "Warning information":
+  {
+    "1":
+    {
+      "File name": ["code.cpp"],
+      "Type": "memory leak",
+      "Variable name": "b",
+      "Line number": [28],
+      "Confirmation conditions": {
+        "1": "When calling function 'handle' in code.cpp:34'handle(1);', 'create_buf' in code.cpp:20 and code.cpp:24 are both executed, and 'b' is not freed between the two allocations.",
+        "2": "Between code.cpp:20:'Buf *b = create_buf(128);' and code.cpp:24:'b = create_buf(64);', no alias of 'b' is created." 
+      }
+    }
+  }
+}
+```

@@ -1,0 +1,3 @@
+code.cpp:10:14: warning: Division by zero [core.DivideZero]
+   10 |     return x / d;
+      |            ~~^~~

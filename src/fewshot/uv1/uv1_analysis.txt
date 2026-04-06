@@ -1,0 +1,25 @@
+First we search for the assignment of "ptr":
+22    int* ptr = get_pointer(arr, 5);
+If the return value of function "get_pointer" can be undefined, "ptr" can be undefined. So we inspect this function:
+The return pointer of get_pointer is declared in line3:'int* p;' without assignment. Then "p" is assigned in the for loop in line5. If all "arr[i] > 0" are not satisfied, "p" will be returned without assignment.
+
+```json
+{
+  "Files": [
+    "code.cpp"
+  ],
+  "Warning information":
+  {
+    "1":
+    {
+      "File name": "code.cpp",
+      "Type": "uninitialized variable",
+      "Variable name": "ptr",
+      "Line number": 24,
+      "Confirmation conditions": {
+        "1": "When calling 'get_pointer' in code.cpp:22'int* ptr = get_pointer(arr, 5);', in the for loop in code.cpp:5:'for(int i = 0; i < size; i++)', all '(arr[i] > 0)' in code.cpp:6 are not satisfied, so that 'p = &arr[i];' in code.cpp:7 will never be executed."
+      }
+    }
+  }
+}
+```

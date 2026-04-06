@@ -1,0 +1,30 @@
+We inspect what value "idx" can be when reaching code.cpp:22:"buff[idx] = '\0';"
+Watching code from line 18-21:
+        int idx;
+        for(idx = 0; idx < len; ++idx){
+            buff[idx] = dst[idx];
+        }
+we can easily conclude that idx=len when reaching line 22.
+"len" is passed as argument. When function "write_buffer" is called in function "main", "len" equals "strlen(input_str)" "and len <= BUFFER_SIZE", meaning that 0 <= idx = len <= BUFFER_SIZE.
+Th array "buff" in class "Buffer" is declared by "char buff[BUFFER_SIZE];", so that if idx=BUFFER_SIZE, buffer overflow may happen.
+
+```json
+{
+  "Files": [
+    "code.cpp"
+  ],
+  "Warning information":
+  {
+    "1":
+    {
+      "File name": "code.cpp",
+      "Type": "buffer overflow",
+      "Variable name": "buff",
+      "Line number": 22,
+      "Confirmation conditions": {
+        "1": "If user input a string with length = 'BUFFER_SIZE' in code.cpp:30:'std::cin >> input_str;', when calling 'write_buffer' in code.cpp:35:'buffer.write_buffer(len, input_str);', len=BUFFER_SIZE, resulting in 'idx' of code.cpp:22:'buff[idx] = '\0';' equals BUFFER_SIZE"
+      }
+    }
+  }
+}
+```

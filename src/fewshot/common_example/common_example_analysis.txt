@@ -8,51 +8,28 @@ README.md
 
 call function: view_one_file(file_path="example.cpp", start_line=1, end_line=25)
 return: 
-     1  #include<iostream>
-     2  #include<string.h>
-     3
-     4  void test(char* p){
-     5      if(strcmp(p, "correct") == 0){
-     6          std::cout << "correct" << std::endl;
-     7          return;
-     8      }
-     9      delete[] p;
-    10      return;
-    11  }
-    12
-    13  int main(){
-    14      
-    15      char* a = new char[10];
-    16      char* b = new char[10];
-    17      std::cin >> a;
-    18      strcpy(b, "correct");
-    19
-    20      test(a);
-    21      test(b);
-    22
-    23      delete[] a;
-    24      delete[] b;
-    25  }
+     1 | #include<iostream>
+     2 | 
+     3 | void foo(char* p, int flag){
+     4 |     printf("%s\n", p);
+     5 |     if(flag == 1){
+     6 |         delete[] p;
+     7 |     }
+     8 | }
+     9 | 
+    10 | int main(){
+    11 |     char* str = new char[10];
+    12 |     for(int i = 0; i < 3; i++){
+    13 |         foo(str, i);
+    14 |     }
+    15 |     return 0;
+    16 | }
 
 call function: search_in_directory(pattern="delete", dir=".")
 return: 
-./example.cpp:9:    delete[] p;
-./example.cpp:23:    delete[] a;
-./example.cpp:24:    delete[] b;
+example.cpp:6:        delete[] p;
 
-
-The warning means that the pointer "b" may be deleted twice. We find the trace of "b" in the code:
-1. "b" is allocated memory in line 16: `char* b = new char[10];
-2. "b" is assigned the string "correct" in line 18: `strcpy(b, "correct");
-3. "b" is passed to the function "test" in line 21: `test(b) and it may be deleted;
-4. "b" is deleted in line 24: `delete[] b;
-
-***Important note***
-We find that pointer "a" can also be deleted twice, but we should focus on "b" only due to the rule:
-Make sure the conditions you generate match the warning information(file, line, variable...) strictly.
-So we ignore the problem of "a"
-
-The warning is true positive if and only if "b" is deleted in the function "test". So we generate the conditions:
+The function "foo" is called 3 times in "main" with the same pointer "str" as argument. If "flag==1" is true in one call and "deleted[] p" is executed, and then "foo" is called again, the use-after-free bug happens on "str".
 
 ```json
 {
@@ -63,12 +40,12 @@ The warning is true positive if and only if "b" is deleted in the function "test
   {
     "1":
     {
-      "File name": "example.cpp",
-      "Type": "double free",
-      "Variable name": "b",
-      "Line number": [9, 24],
+      "File name": ["example.cpp"],
+      "Type": "use after free",
+      "Variable name": "str",
+      "Line number": [13],
       "Confirmation conditions": {
-        "1": "When executing line 21: 'test(b);', the pointer 'b' is deleted by line 9: 'delete[] p;' "
+        "1": "In the for loop in example.cpp:12 in main function, one call of 'foo' in example.cpp:13:'foo(str, i);' with 'flag==1' will cause 'delete[] p' in example.cpp:6 to be executed, and then 'foo' is called again in the same loop."
       }
     }
   }

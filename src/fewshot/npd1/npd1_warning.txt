@@ -1,0 +1,3 @@
+code.c:25:16: error: Null pointer dereference: p [nullPointer]
+        return p->value + b;
+               ^

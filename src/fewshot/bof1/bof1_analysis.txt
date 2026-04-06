@@ -1,25 +1,22 @@
-First we search for where "a" is assigned:
-6       std::cin >> a;
-"a" is assigned by input
-We should confirm whether "a" has been checked before "b[a] = 1;"
-The conditions:
+We inspect what the value of "idx" can be when reaching code.cpp:13:"buff[idx] = val;" in function "write_buff".
+In function "main", when calling "write_buff", "i" is passed as the first argument "idx", and "i" is initialized by user input with checking, so that when calling function "write_buff", "idx" can be any integer.
+In function "write_buff", before code.cpp:13:"buff[idx] = val;", check "if(idx < buff_len)" is performed. From function "alloc_buff", we know that "buff_len" is the length of the buffer allocated. "idx" will not exceed the length of buffer. However, "idx" can still be a negative integer, which may cause out-of-bounds access.
 
 ```json
 {
   "Files": [
-    "overflow.cpp"
+    "code.cpp"
   ],
   "Warning information":
   {
     "1":
     {
-      "File name": "overflow.cpp",
+      "File name": "code.cpp",
       "Type": "buffer overflow",
-      "Variable name": "b",
-      "Line number": 9,
+      "Variable name": "buff",
+      "Line number": 13,
       "Confirmation conditions": {
-        "1": "Between the assignment overflow.cpp:6:"std::cin >> a;" and overflow.cpp:9:"b[a] = 1;", no bounds checking of "a" is performed",
-        "2": ""a" is assigned by input stream in overflow.cpp:6:"std::cin >> a;", so it can have any value"
+        "1": "When user input a negative integer for 'i' in code.cpp:21:'scanf("%d %d", &i, &v);', the value will be passed to "idx" when calling 'write_buff' in code.cpp:22:'write_buff(i, v);' as the first argument "idx", and can reach code.cpp:13:'buff[idx] = val;', so that "idx" can be a negative integer when accessing buff[idx]"
       }
     }
   }

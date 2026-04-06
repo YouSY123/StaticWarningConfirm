@@ -1,0 +1,27 @@
+We first analyze the value of "d":
+In code.cpp:9:"int d = normalize(y);", the value of "d" is determined by function "normalize".
+In function "normalize", if the argument = 1 or < 0, the return value = 0.
+y in code.cpp:9:"int d = normalize(y);" is determined by user input in main function.
+
+Since user can input any integer, if value 1 or < 0 can reach normalize, the divided-by-zero bug will happen.
+
+```json
+{
+  "Files": [
+    "code.cpp"
+  ],
+  "Warning information":
+  {
+    "1":
+    {
+      "File name": ["code.cpp"],
+      "Type": "divided by zero",
+      "Variable name": "d",
+      "Line number": [10],
+      "Confirmation conditions": {
+        "1": "User input in code.cpp:15:'std::cin >> x >> y;' can result in y = 1 or y < 0, and 'y' can be passed successfully to 'compute()' as the second argument then to normalize() as the first argument, resulting in 'd' in code.cpp:9 being assigned 0"
+      }
+    }
+  }
+}
+```

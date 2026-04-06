@@ -1,0 +1,3 @@
+code.cpp:24:10: warning: Dereference of undefined pointer value (loaded from variable 'ptr') [core.NullDereference]
+   24 |     *ptr = 10;
+      |      ~~~ ^

@@ -1,2 +1,3 @@
-line9: b[a] = 1;
-description: the value of "a" is not validated and may exceed the bound of "b[]" 
+code.cpp:13:8: error: out of bounds access of "buff"
+    buff[idx] = val;
+     ^

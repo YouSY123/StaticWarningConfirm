@@ -1,0 +1,3 @@
+code.cpp:28:5: warning: Potential leak of memory pointed to by 'b' [unix.Malloc]
+   28 |     free(b->data);
+      |     ^~~~

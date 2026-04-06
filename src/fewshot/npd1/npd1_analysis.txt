@@ -1,0 +1,30 @@
+First we find where the pointer "p" is declared:
+20    Node *p = maybe_get(a);
+Then we inspect the function "maybe_get" to see if it can return NULL:
+    if (flag > 0) {
+    ...
+    }
+    return NULL;
+That means "p" can be NULL. So the warning is correct iff "p" is assigned to NULL in line 20 and then passed to line 25.
+
+```json
+{
+  "Files": [
+    "code.c"
+  ],
+  "Warning information":
+  {
+    "1":
+    {
+      "File name": ["code.c"],
+      "Type": "null pointer dereference",
+      "Variable name": "p",
+      "Line number": [25],
+      "Confirmation conditions": {
+        "1": "When assigning 'p' in code.c:20:'Node *p = maybe_get(a);', the function return NULL, so that 'p' is assigned to NULL", 
+        "2": "When executing code.c:25:'return p->value + b;', the pointer 'p' equals 'p' in code.c:20:'Node *p = maybe_get(a);'"
+      }
+    }
+  }
+}
+```
