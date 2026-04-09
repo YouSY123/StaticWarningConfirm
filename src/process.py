@@ -5,6 +5,7 @@ import json
 from copy import deepcopy
 from typing import Union
 from langchain.tools import tool
+from codequery_tools import get_information_of_project
 
 
 from config import PRINT_LOG
@@ -103,7 +104,7 @@ class StaticAnalysisWarningsConfirmation:
             # generate conditions
             try: 
 
-                condition_generator = create_condition_generator([get_example, list_files, view_one_file, search_in_directory])
+                condition_generator = create_condition_generator([get_example, list_files, view_one_file, get_information_of_project])
 
                 result = await condition_generator.ainvoke(
                     {"messages": [{"role": "user", "content": input_info + checker_info}]},
@@ -350,10 +351,19 @@ class StaticAnalysisWarningsConfirmation:
         generate_prompt ='The result of the static analyzer:\n' + self.sar
         
         # generate and extract the conditions
-        conditions_json = await self.generate_conditions(generate_prompt)
-        if "result" in conditions_json:
-            if conditions_json["result"] == "failed":
-                return ["Condition generation failed."]
+        from config import CONDITION_GENERATE_RETRY_TIMES
+        condition_retry = 1
+
+        while condition_retry <= CONDITION_GENERATE_RETRY_TIMES:
+            conditions_json = await self.generate_conditions(generate_prompt)
+            if "result" in conditions_json:
+                if conditions_json["result"] == "failed":
+                    condition_retry += 1
+                    if condition_retry > CONDITION_GENERATE_RETRY_TIMES:
+                        return ["Condition generation failed."]
+                    else:
+                        continue
+            break
 
         # extract the conditions and get prompts for each judging agent
         judger_prompt = []
@@ -410,7 +420,7 @@ class StaticAnalysisWarningsConfirmation:
             '''
             return self.agent_tools.search_in_directory(pattern, dir)
         
-        judge_tasks = [self.judge_conditions(json_info, [list_files, view_one_file, search_in_directory], idx+1) for idx, json_info in enumerate(judger_prompt)]
+        judge_tasks = [self.judge_conditions(json_info, [list_files, view_one_file, get_information_of_project], idx+1) for idx, json_info in enumerate(judger_prompt)]
         llm_results = await asyncio.gather(*judge_tasks)
         result = []
         result_ptr = 0

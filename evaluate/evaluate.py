@@ -1,7 +1,8 @@
 import sys
-sys.path.append(".")
+sys.path.append("src/")
 
-from src.process import StaticAnalysisWarningsConfirmation
+from confirm import confirm
+from process import StaticAnalysisWarningsConfirmation
 import asyncio
 import json
 import subprocess
@@ -139,6 +140,3 @@ def eval_primevul_dataset():
                 f.close()
     
     print(warning_cnt)
-
-if __name__ == "__main__":
-    eval_primevul_dataset()

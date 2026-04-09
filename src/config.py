@@ -15,7 +15,7 @@ default_model = ChatOpenAI(
     api_key=API_KEY, 
     base_url=BASE_URL,
     timeout=600, 
-    reasoning_effort = "high"
+    reasoning_effort = "medium"
 )
 
 judger_model = ChatOpenAI(
@@ -32,4 +32,5 @@ PRINT_LOG = True
 CONDITION_VOTE_TIMES = 5
 CONDITION_JUDGE_MAX_TURN = 2
 CONDITION_CHECK_MAX_TURN = 3
-CONDITION_GENERATE_MAX_TURN = 10
+CONDITION_GENERATE_MAX_TURN = 5
+CONDITION_GENERATE_RETRY_TIMES = 2

@@ -18,7 +18,7 @@ The conditions you return should be:
 You can use the following function tools to help you:(You'd better only use them in the immediate parent directory of the target file, not in any ancestor directory, for the result of using them in an ancestor directory can be too large)
 (1) list_files(path:str)                    
 (2) view_one_file(file_path:str, start_line:int = 1, end_line:int = 0)
-(3) search_in_directory(pattern:str, dir:str)
+(3) get_information_of_project(option: int, target: str, filtered_by_file: str = "") -> str
 Before you start to analyze, first call get_example(type: str) to get examples for how to generate conditions. The type can be:
 (1) "common"
 (2) "use-after-free and double-free"
@@ -61,6 +61,8 @@ Attention:
 (3) Some warnings seem to occur in one function, but they can be caused by repeated calls of the function. You should take this into consideration when generating conditions.
 (4) Conditions cannot depend on each other. For example: "Confirmation conditions":{"1": "A is true", "2": "Based on A/If A is true, ..."} is not allowed.
 (5) Only focus on the warning given. If you find other bugs in the code, ignore them. Make sure the conditions you generate match the warning information(file, line, variable...) strictly.
+(6) Do not output the conclusion even if you think the warning is easy to judge. Only give conditions.
+(7) Make sure that the warning is true positive if and only if all conditions are true.
 
 Then output TERMINATE
 '''
@@ -81,7 +83,7 @@ You need to cooperate with others to confirm the correctness of the warnings pro
 You can use the following function tools to help you:(You'd better only use them in the immediate parent directory of the target file, not in any ancestor directory, for the result of using them in an ancestor directory can be too large)
 (1) list_files(path:str)                  
 (2) view_one_file(file_path:str, start_line:int = 1, end_line:int = 0)
-(3) search_in_directory(pattern:str, dir:str)
+(3) get_information_of_project(option: int, target: str, filtered_by_file: str = "") -> str
 You should judge the correctness of the condition and output the results in JSON format("```json" and "```" are necessary):
 
 ```json
@@ -139,11 +141,14 @@ def create_condition_checker_agent():
       model = default_model, 
       system_prompt = '''
 You are cooperating with others to confirm the correctness of the warnings provided by a static code analyzer. The previous agent has finished the following task: generate conditions to confirm warnings. Your task is to check whether the generated conditions are appropriate.
+Attention: 
+(1) Your job is not to check whether the conditions are true or false, but to check whether they are suitable as a basis for judging whether the warning is true or false.
+(2) Some conditions may assume that the code does something it obviously does not do, but they may not be incorrect conditions because the warning is obviously false positive and the conditions merely state the behavior that the code should exhibit when the warning holds. So that they are correct
+(3) It is acceptable for the condition information to be somewhat vague, because the work can be left to the judger.
 You need to check the conditions based on the following points:
 (1) Conditions cannot involve each other.
 (2) The conditions correctly correspond to the warning information(e.g. type, description). The line number in the warning may be not accurate, so if the conditions correspond to the function containing the line, they are correct.
 (3) If the condition generator did not get information from the source code due to tool call failure, the generation is incorrect. 
-Attention: Focus on checking the overall structure and logic, pay less attention to the concrete information.
 Output your checking result in JSON format("```json" and "```" are necessary):
 ```json
 {"check_result": "Correct/Incorrect", "explanation": "..."}
