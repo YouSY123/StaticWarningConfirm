@@ -1,11 +1,10 @@
 from agents import create_condition_analyzer, create_condition_generator, create_condition_judge_checker_agent, create_condition_checker_agent
 import asyncio
-from tools import AgentTools
 import json
 from copy import deepcopy
-from typing import Union
-from langchain.tools import tool
 from codequery_tools import get_information_of_project
+from tools import init_tools, list_files, view_one_file, view_one_function
+from fewshot import get_examples_for_condition_analysis
 
 
 from config import PRINT_LOG
@@ -25,16 +24,18 @@ def write_result(content:str, result_path:str):
 
 class StaticAnalysisWarningsConfirmation:
 
-    def __init__(self, root_dir, static_analysis_result, log_path, result_path):
+    def __init__(self, root_dir, static_analysis_result, log_path, result_path, database_path):
 
         self.root_dir = root_dir
         self.sar = static_analysis_result
-        self.agent_tools = AgentTools(src_path=root_dir)
         self.log_path = log_path
         self.result_path = result_path
 
-        from config import PRINT_LOG
+        # initialize tools
+        init_tools(root_dir, database_path)
 
+        # initialize files
+        from config import PRINT_LOG
         if PRINT_LOG:
             try:
                 with open(self.log_path, 'w') as f:
@@ -52,51 +53,16 @@ class StaticAnalysisWarningsConfirmation:
             print("Failed to initialize result file.")
             exit("Failed to initialize result file.")
 
+
     async def generate_conditions(self, input_info:str):
         # create tools for the agent
         from fewshot import get_example
-
-        @tool
-        def list_files(path:str):
-            '''List file structure in the directory
-
-            Args: 
-
-                path: the directory to list file, using relative path to the project directory
-
-            You'd better only use it in the immediate parent directory of the target file, not in any ancestor directory, for the result of using it in an ancestor directory can be too large
-            '''
-            return self.agent_tools.list_files(path)
-        @tool
-        def view_one_file(file_path:str, start_line:int = 1, end_line:int = 0):
-            '''View a file in the src directory
-
-                Args:
-
-                    file_path: the path of file you want to view
-                    start_line: the line number to start viewing
-                    end_line: the line number to end viewing
-            '''
-            return self.agent_tools.view_one_file(file_path, start_line, end_line)
-        @tool
-        def search_in_directory(pattern:str, dir:str):
-            '''Find string in a directory
-
-                Args:
-
-                    pattern: the string pattern you want to find
-                    dir: the directory you want to search in
-
-                You'd better only use it in the immediate parent directory of the target file, not in any ancestor directory, for the result of using it in an ancestor directory can be too large
-            '''
-            return self.agent_tools.search_in_directory(pattern, dir)
 
         # create agent
         from config import CONDITION_GENERATE_MAX_TURN
 
         log_info = ''
         generate_pass = False
-
         checker_info = ""
 
         for turn in range(CONDITION_GENERATE_MAX_TURN):
@@ -104,7 +70,7 @@ class StaticAnalysisWarningsConfirmation:
             # generate conditions
             try: 
 
-                condition_generator = create_condition_generator([get_example, list_files, view_one_file, get_information_of_project])
+                condition_generator = create_condition_generator([get_example, list_files, view_one_file, get_information_of_project, view_one_function])
 
                 result = await condition_generator.ainvoke(
                     {"messages": [{"role": "user", "content": input_info + checker_info}]},
@@ -221,7 +187,8 @@ class StaticAnalysisWarningsConfirmation:
                     condition_analyzer = create_condition_analyzer(tools)
 
                     result = await condition_analyzer.ainvoke(
-                        {"messages": [{"role": "user", "content": json_info + checker_info}]},
+                        {"messages": [{"role": "user", "content": json_info + checker_info}, 
+                                      {"role": "user", "content": get_examples_for_condition_analysis()}]},
                         {"recursion_limit": 50}
                     )
 
@@ -355,72 +322,40 @@ class StaticAnalysisWarningsConfirmation:
         condition_retry = 1
 
         while condition_retry <= CONDITION_GENERATE_RETRY_TIMES:
+            # generate conditions
             conditions_json = await self.generate_conditions(generate_prompt)
+            # check if conditions generate failed
             if "result" in conditions_json:
                 if conditions_json["result"] == "failed":
                     condition_retry += 1
                     if condition_retry > CONDITION_GENERATE_RETRY_TIMES:
                         return ["Condition generation failed."]
                     else:
+                        write_result(f"Retry\n", self.result_path)
                         continue
+            
+            # extract the conditions and get prompts for each judging agent
+            # check if conditions format is correct
+            judger_prompt = []
+            if 'Warning information' in conditions_json:
+                for w in conditions_json['Warning information']:
+                    warning = conditions_json['Warning information'][w]
+                    if "Confirmation conditions" in warning:
+                        for c in warning["Confirmation conditions"]:
+                            confirmation = warning["Confirmation conditions"][c]
+                            new_prompt_json = deepcopy(warning)
+                            new_prompt_json["Confirmation conditions"] = confirmation
+                            judger_prompt.append(json.dumps(new_prompt_json))
+                    else:
+                        write_result(f"Wrong format of conditions. Retry\n", self.result_path)
+                        continue
+            else:
+                write_result(f"Wrong format of conditions. Retry\n", self.result_path)
+                continue
+
             break
-
-        # extract the conditions and get prompts for each judging agent
-        judger_prompt = []
-        if 'Warning information' in conditions_json:
-            for w in conditions_json['Warning information']:
-                warning = conditions_json['Warning information'][w]
-                if "Confirmation conditions" in warning:
-                    for c in warning["Confirmation conditions"]:
-                        confirmation = warning["Confirmation conditions"][c]
-                        new_prompt_json = deepcopy(warning)
-                        new_prompt_json["Confirmation conditions"] = confirmation
-                        judger_prompt.append(json.dumps(new_prompt_json))
-                else:
-                    print('Wrong format of conditions')
-                    return ["Conditions format error."]
-        else:
-            print('Wrong format of conditions')
-            return ["Conditions format error."]
-
-        # send prompts to agents by asyncio
-        # create agent
-        @tool
-        def list_files(path:str):
-            '''List file structure in the directory
-
-            Args: 
-
-                path: the directory to list file, using relative path to the project directory
-
-            You'd better only use it in the immediate parent directory of the target file, not in any ancestor directory, for the result of using it in an ancestor directory can be too large
-            '''
-            return self.agent_tools.list_files(path)
-        @tool
-        def view_one_file(file_path:str, start_line:int = 1, end_line:int = 0):
-            '''View a file in the src directory
-
-                Args:
-
-                    file_path: the path of file you want to view
-                    start_line: the line number to start viewing
-                    end_line: the line number to end viewing
-            '''
-            return self.agent_tools.view_one_file(file_path, start_line, end_line)
-        @tool
-        def search_in_directory(pattern:str, dir:str):
-            '''Find string in a directory
-
-                Args:
-
-                    pattern: the string pattern you want to find
-                    dir: the directory you want to search in
-
-                You'd better only use it in the immediate parent directory of the target file, not in any ancestor directory, for the result of using it in an ancestor directory can be too large
-            '''
-            return self.agent_tools.search_in_directory(pattern, dir)
         
-        judge_tasks = [self.judge_conditions(json_info, [list_files, view_one_file, get_information_of_project], idx+1) for idx, json_info in enumerate(judger_prompt)]
+        judge_tasks = [self.judge_conditions(json_info, [list_files, view_one_file, get_information_of_project, view_one_function], idx+1) for idx, json_info in enumerate(judger_prompt)]
         llm_results = await asyncio.gather(*judge_tasks)
         result = []
         result_ptr = 0

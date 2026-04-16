@@ -1,0 +1,31 @@
+First we inspect the function reported to cause Memory leak:
+In function char* func(int flag, const char* str, int len), p is first assigned to null, then in the if-else structure at line 9 ~ 17, p is allocated memory, and at line 19, the function is returned.
+
+In the function, the pointer "p" is not freed. But we can see that "p" is returned by the function. So the memory may be freed by the callers. We cannot make conclusions now.
+
+We then find all callers of the function:
+(1) In int main(), "func" is called at line 26: char* str_ptr = func(1, str, 6);
+
+So pointer "p" has an alias "str_ptr", and in function "main", no other alias of "p" can be found.
+if pointer "str_ptr" is not freed in function "main", this memory leak is a true positive warning.
+
+```json
+{
+  "Files": [
+    "example.cpp"
+  ],
+  "Warning information":
+  {
+    "1":
+    {
+      "File name": ["example.cpp"],
+      "Type": "memory leak",
+      "Variable name": "str_ptr",
+      "Line number": [26],
+      "Confirmation conditions": {
+        "1": "In function example.cpp:23:"main()", after example.cpp:26:"char* str_ptr = func(1, str, 6);", pointer "str_ptr" is not freed."
+      }
+    }
+  }
+}
+```

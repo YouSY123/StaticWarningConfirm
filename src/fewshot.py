@@ -24,7 +24,7 @@ def get_example(type: str) -> str:
     elif type == "null-pointer-dereference":
         return get_example_base("npd1", "null-pointer-dereference") + "\n\n" + get_example_base("npd2", "null-pointer-dereference")
     elif type == "memory-leak":
-        return get_example_base("ml1", "memory-leak")
+        return get_example_base("ml1", "memory-leak") + "\n\n" + get_example_base("ml2", "memory-leak")
     elif type == "divided-by-zero":
         return get_example_base("dbz1", "divided-by-zero")
     elif type == "uninitialized-variable":
@@ -65,3 +65,33 @@ Then we try to analyze the code and give conditions for confirming the correctne
 {example_analysis}
 ---------- End of the example ----------
 '''
+
+
+def get_examples_for_condition_analysis():
+
+    with open("src/fewshot/condition_judge1/example.cpp", "r") as f:
+        src_code = f.read()
+    f.close()
+    with open("src/fewshot/condition_judge1/condition.txt", "r") as f:
+        condition = f.read()
+    f.close()
+    with open("src/fewshot/condition_judge1/analysis.txt", "r") as f:
+        analysis = f.read()
+    f.close()
+
+    return f"""\
+---------- The example ----------
+This is an example for condition analysis and judgment:
+
+The source code:
+```cpp
+{src_code}
+```
+
+The condition:
+{condition}
+
+Analysis:
+{analysis}
+---------- End of the example ----------
+"""

@@ -53,11 +53,11 @@ def build_codequery_db(
     return "Succeed"
 
 
-@tool
+#@tool
 def get_information_of_project(
     option: int, 
     target: str, 
-    filtered_by_file: str = ""
+    filtered_by_path: str = ""
 ) -> str:
     
     """Get information from source code of the project
@@ -84,9 +84,9 @@ def get_information_of_project(
             The target of the search. Refer to "option" for more details.
             Attention: "(", ")", "{", "}" are not needed for functions, structs and classes. For files, only input name and do not input the path
 
-        filtered_by_file: str
-            Whether to filter the result by file.
-            If you input file name(only file name, do not input file path), the result will be filtered by file.
+        filtered_by_path: str
+            Whether to filter the result by path.
+            If you input a path, the result will be filtered by files in the path.
             If you keep the value "", the result will be based on the whole project.
         ----------
 
@@ -98,7 +98,7 @@ def get_information_of_project(
         ----------
     """
 
-    if filtered_by_file == "":
+    if filtered_by_path == "":
 
         cmd = ["cqsearch", 
                "-s", CODEQUERY_DB_PATH, 
@@ -113,7 +113,7 @@ def get_information_of_project(
                "-p", str(option), 
                "-t", target, 
                "-e", 
-               "-b", filtered_by_file]
+               "-b", filtered_by_path]
 
     try:
         result = subprocess.run(
