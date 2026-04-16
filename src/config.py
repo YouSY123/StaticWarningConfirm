@@ -16,16 +16,7 @@ default_model = ChatOpenAI(
     base_url=BASE_URL,
     timeout=600, 
     reasoning_effort="medium", 
-    temperature=0.3
-)
-
-judger_model = ChatOpenAI(
-    model=MODEL, 
-    api_key=API_KEY, 
-    base_url=BASE_URL,
-    timeout=600, 
-    reasoning_effort="medium", 
-    temperature=0.3
+    temperature=0.2
 )
 
 # Whether to print log of the clients

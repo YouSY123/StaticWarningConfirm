@@ -1,4 +1,4 @@
-from config import default_model, judger_model
+from config import default_model
 from langchain.agents import create_agent
 
 def create_condition_generator(tools:list):
@@ -16,7 +16,7 @@ Your task is to generate conditions which are used to determine whether these wa
 The conditions you give must meet the following requirements:
 (1) The logic of the conditions: the warning is true positive if and only if all conditions are true.
 (2) Conditions should be independent from each other. For example, "Confirmation conditions":{"1": "A is true", "2": "Based on A/If A is true/After the execution in A/In later execution/etc, ..."} is not allowed.
-(3) Conditions should be detailed in locations of the variables, functions, code, etc.(format [file]:[line]:[code]).
+(3) Conditions should be detailed in locations of the variables, functions, code, etc..
 
 Before you start to analyze, first call get_example(type: str) to get examples for how to generate conditions. The type can be:
 (1) "common"
@@ -72,7 +72,7 @@ Something you need to pay attention to when inspecting the source code:
 When generating conditions, you must strictly follow the steps below:
 (1) Get examples from tool "get_example".
 (2) Get the function corresponding to the warning with the tool "view_one_function". Most static analysis tool will provide file and line.
-(3) Get callers and calls of the function by using tool "get_information_of_project" with "option" set to 6 and 8 and inspect them. You need to determine the specific argument values passed to the function. Some warnings are related with these calls, and you should inspect the callers in this case. If analyzing only the function's caller is insufficient, you can analyze higher-level callers recursively.
+(3) Get callers and calls of this function by using tool "get_information_of_project" with "option" set to 6 and 8 and inspect them. You need to determine the specific argument values passed to the function. Some warnings are related with these calls, and you should inspect the callers in this case. If analyzing only the function's caller is insufficient, you can analyze higher-level callers recursively.
 (4) Carefully inspect the function corresponding to the warning. If necessary, inspect its callers:
   (4.1) Analyze everything related with the warning in this function, including variable and parameter values, function return values, pointer alias, control flow, path reachability, etc.
   (4.2) For functions, macros related with the warning inside this function, use tool "get_information_of_project" to search for them. Do not assume them to be some value. For functions, you need to determine its actual return value based on arguments and do not assume that the return value can be all possible return values of the function.
@@ -92,7 +92,7 @@ def create_condition_analyzer(tools:list):
   '''
   return create_agent(
       name = 'Condition_analyzer', 
-      model = judger_model, 
+      model = default_model,
       tools = tools,
       system_prompt = '''\
 You are cooperating with others to determine whether warnings on a C/C++ project provided by a static analysis tool is true positive or false positive. 
@@ -105,12 +105,17 @@ You can use the following function tools to help you:
 If you are sure that the condition is true, output T and give an explanation to prove it. For example, if the condition is "Exist an execution path ...", you should give the path.
 If you are sure that the condition is false, output F and give an explanation to prove it. For example, if the condition is "The two pointers point to the same memory", you should find evidence that they point to different memory.
 If you are not sure about the condition, feel free to output Unknown and give your reasons and what you need to judge it.
---------------------
-Something you need to pay attention to when inspecting the condition and source code:
-(1) If you are judging a condition that claims the value of a variable, a pointer or a function, do not assume that they can be all possible values because some code paths can not be entered. You should analyze their actual value based on path reachability and arguments. For example, a function can have several "return" statements, and you have to analyze the reachability of these returns to get the actual value.
-(2) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
 Something you need to pay attention to when giving results:
 (1) Some conditions may be in the following form: (If)..., the warning is false positive. If you think the condition is true, meaning the warning is false positive, output result F.
+--------------------
+When judging conditions, you must strictly follow the steps below:
+(1) Get the function corresponding to the condition with the tool "view_one_function".
+(2) Carefully inspect this function:
+  (2.1) Analyze everything related with the condition in this function, including variable and parameter values, function return values, pointer alias, control flow, path reachability, etc.
+  (2.2) For variables, functions, macros related with the condition inside this function, use tool "get_information_of_project" to search for them. Do not assume them to be some value. For functions, you need to determine its actual return value based on arguments and do not assume that the return value can be all possible return values of the function.
+  (2.3) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
+(3) If some information(e.g. the parameters) can only be found in the callers, use "get_information_of_project" to get callers and calls recursively until you get the exact values by setting "option" to 6 and 8. Do not assume the variables you don't know to be any value. 
+(4) Then you can continue obtaining information and analyzing source code in your way.
 --------------------
 You should output the results in JSON format("```json" and "```" are necessary):
 
@@ -168,7 +173,7 @@ def create_condition_checker_agent():
       name = 'Condition_checker',
       model = default_model, 
       system_prompt = '''\
-You are cooperating with other agents to determine whether the warnings on a C/C++ project provided by a static analysis tool are true positive or false positive. The other agents have finished the following task: generate conditions to confirm warnings. Your task is to check whether these conditions are appropriate.
+You are cooperating with other agents to determine whether the warnings on a C/C++ project provided by a static analysis tool are true positive or false positive. The other agents have finished the following task: generate conditions to confirm warnings. Your task is to check whether these conditions have problems.
 You need to check the conditions based on the following requirements on conditions:
 (1) The logic of the conditions: the warning is true positive if and only if all conditions are true.
 (2) Conditions should be independent from each other. For example, "Confirmation conditions":{"1": "A is true", "2": "Based on A/If A is true/After the execution in A, ..."} is not allowed.
@@ -176,9 +181,11 @@ You need to check the conditions based on the following requirements on conditio
 (4) The conditions should correctly correspond to the warning information(e.g. type, description, line). 
 --------------------
 Something you should pay attention to:
-(1) Conditions do not necessarily align with the C/C++ program. For example, they will claim the program to do something it obviously does not. This is not a wrong generation because the warning may be false positive. You should not ask the condition generator to state that the warning is false positive. Instead, the generator gives correct conditions in this case.
-(2) Conditions do not necessarily describe the entire process that warning may happen, because some parts of the process are easy to judge or some code paths can obviously not be entered. For example, for a null pointer dereference warning, the conditions may only try to confirm the pointer is null because the dereference is obvious. In this case, the conditions are appropriate. Do not ask the condition generator to give the whole process.
+(1) Focus on checking the conditions based on the requirements and pay less attention to the detailed code.
+(2) Conditions do not necessarily align with the C/C++ program. For example, they will claim the program to do something it obviously does not. This is not a wrong generation because the warning may be false positive. You should not ask the condition generator to state that the warning is false positive. Instead, the generator gives correct conditions in this case.
+(3) Conditions do not necessarily describe the entire process that warning may happen, because some parts of the process are easy to judge or some code paths can obviously not be entered. For example, for a null pointer dereference warning, the conditions may only try to confirm the pointer is null because the dereference is obvious. In this case, the conditions are appropriate. Do not ask the condition generator to give the whole process.
 --------------------
+If you think the conditions do not have problems, the result is "Correct". Otherwise, the result is "Incorrect".
 Output your checking result in JSON format("```json" and "```" are necessary):
 ```json
 {"check_result": "Correct/Incorrect", "explanation": "..."}
