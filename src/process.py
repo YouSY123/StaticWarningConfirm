@@ -345,6 +345,8 @@ class StaticAnalysisWarningsConfirmation:
                             confirmation = warning["Confirmation conditions"][c]
                             new_prompt_json = deepcopy(warning)
                             new_prompt_json["Confirmation conditions"] = confirmation
+                            new_prompt_json.pop("Explanation")
+                            #print(new_prompt_json)
                             judger_prompt.append(json.dumps(new_prompt_json))
                     else:
                         write_result(f"Wrong format of conditions. Retry\n", self.result_path)
