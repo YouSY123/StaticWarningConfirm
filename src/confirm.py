@@ -51,7 +51,7 @@ def confirm_project(
         return "build database fail"
     
     with open(statistics_path, "w") as f:
-        f.write()
+        f.write("")
     f.close()
     
     result_list = []

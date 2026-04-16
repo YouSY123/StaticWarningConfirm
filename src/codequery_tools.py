@@ -53,7 +53,7 @@ def build_codequery_db(
     return "Succeed"
 
 
-#@tool
+@tool
 def get_information_of_project(
     option: int, 
     target: str, 
