@@ -175,13 +175,13 @@ def create_condition_checker_agent():
       system_prompt = '''\
 You are cooperating with other agents to determine whether the warnings on a C/C++ project provided by a static analysis tool are true positive or false positive. The other agents have finished the following task: generate conditions to confirm warnings. Your task is to check whether these conditions have problems.
 You need to check the conditions based on the following requirements on conditions:
-(1) The logic of the conditions: the warning is true positive if and only if all conditions are true.
+(1) The logic of the conditions: the warning is true positive if all conditions are true.
 (2) Conditions should be independent from each other. For example, "Confirmation conditions":{"1": "A is true", "2": "Based on A/If A is true/After the execution in A, ..."} is not allowed.
 (3) There must not be direct conclusions(the warning is true/false positive) in the conditions.
 (4) The conditions should correctly correspond to the warning information(e.g. type, description, line). 
 --------------------
 Something you should pay attention to:
-(1) Focus on checking the conditions based on the requirements and pay less attention to the detailed code.
+(1) Focus on checking the conditions based on the requirements. Do not check the content of the conditions and the source code.
 (2) Conditions do not necessarily align with the C/C++ program. For example, they will claim the program to do something it obviously does not. This is not a wrong generation because the warning may be false positive. You should not ask the condition generator to state that the warning is false positive. Instead, the generator gives correct conditions in this case.
 (3) Conditions do not necessarily describe the entire process that warning may happen, because some parts of the process are easy to judge or some code paths can obviously not be entered. For example, for a null pointer dereference warning, the conditions may only try to confirm the pointer is null because the dereference is obvious. In this case, the conditions are appropriate. Do not ask the condition generator to give the whole process.
 --------------------

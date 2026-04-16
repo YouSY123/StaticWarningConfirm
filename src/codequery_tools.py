@@ -86,8 +86,9 @@ def get_information_of_project(
 
         filtered_by_path: str
             Whether to filter the result by path.
-            If you input a path, the result will be filtered by files in the path.
+            If you input a path to a directory or a file, the result will be filtered by files in the directory or the file.
             If you keep the value "", the result will be based on the whole project.
+            Tips: If you are searching for definitions, callers or calls, set filtered_by_path to a high directory or "", otherwise, you may miss information.
         ----------
 
         Files in the result of the function only contain name, without any path information 
