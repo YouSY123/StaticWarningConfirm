@@ -374,13 +374,14 @@ class StaticAnalysisWarningsConfirmation:
         final_results = []
         for c in result:
             condition_result = 'True positive'
-            for key, r in c.items():
-                if (list(r.values()))[0] == 'F':
-                    condition_result = 'False positive'
-                    break
+
             for key, r in c.items():
                 if (list(r.values()))[0] == 'Unknown':
                     condition_result = 'Unknown'
+                    break
+            for key, r in c.items():
+                if (list(r.values()))[0] == 'F':
+                    condition_result = 'False positive'
                     break
             
             final_results.append(condition_result)

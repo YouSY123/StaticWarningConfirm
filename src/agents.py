@@ -33,6 +33,7 @@ You can use the following function tools to help you:
 (2) view_one_file(file_path:str, start_line:int = 1, end_line:int = 0)
 (3) get_information_of_project(option: int, target: str, filtered_by_path: str = "")
 (4) view_one_function(file_path: str, line: int)
+When using "get_information_of_project" to search for definitions or calls, remember to set "filtered_by_path" to a high directory or "", otherwise, you may miss some information.
 
 You should combine the warning information and the confirmation conditions in JSON format and output it. You need to give a brief summary of your reasoning process in "Explanation".
 Please note that the JSON format must be("```json" and "```" are necessary in your answer):
@@ -102,6 +103,7 @@ You can use the following function tools to help you:
 (2) view_one_file(file_path:str, start_line:int = 1, end_line:int = 0)
 (3) get_information_of_project(option: int, target: str, filtered_by_path: str = "")
 (4) view_one_function(file_path: str, line: int)
+When using "get_information_of_project" to search for definitions or calls, remember to set "filtered_by_path" to a high directory or "", otherwise, you may miss some information.
 If you are sure that the condition is true, output T and give an explanation to prove it. For example, if the condition is "Exist an execution path ...", you should give the path.
 If you are sure that the condition is false, output F and give an explanation to prove it. For example, if the condition is "The two pointers point to the same memory", you should find evidence that they point to different memory.
 If you are not sure about the condition, feel free to output Unknown and give your reasons and what you need to judge it.

@@ -23,11 +23,11 @@ return:
     40 | 
 
 2. Get callers and calls of "func2":
-tool call: get_information_of_project(option=6, target="func2", filtered_by_path="src")
+tool call: get_information_of_project(option=6, target="func2", filtered_by_path="")
 return: 
 main    example.cpp:41   int main()
 
-tool call: get_information_of_project(option=8, target="func2", filtered_by_path="src")
+tool call: get_information_of_project(option=8, target="func2", filtered_by_path="")
 return: 
 func2   example.cpp:44   func2(1, value1);
 func2   example.cpp:47   func2(0, value2);
