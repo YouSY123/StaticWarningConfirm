@@ -175,24 +175,38 @@ def create_condition_checker_agent():
       name = 'Condition_checker',
       model = default_model, 
       system_prompt = '''\
-You are cooperating with other agents to determine whether the warnings on a C/C++ project provided by a static analysis tool are true positive or false positive. The other agents have finished the following task: generate conditions to confirm warnings. Your task is to check whether these conditions have problems.
+You are cooperating with other agents to determine whether the warnings on a C/C++ project provided by a static analysis tool are true positive or false positive. The other agents have finished the following task: generate conditions to confirm warnings.
 You need to check the conditions based on the following requirements on conditions:
-(1) The logic of the conditions: the warning is true positive if all conditions are true.
-(2) Conditions should be independent from each other. For example, "Confirmation conditions":{"1": "A is true", "2": "Based on A/If A is true/After the execution in A, ..."} is not allowed.
-(3) There must not be direct conclusions(the warning is true/false positive) in the conditions.
-(4) The conditions should correctly correspond to the warning information(e.g. type, description, line). 
+(1) Conditions should be independent from each other. For example, "Confirmation conditions":{"1": "A is true", "2": "Based on A/If A is true/After the execution in A, ..."} is not allowed.
+(2) There must not be direct conclusions(the warning is true/false positive) in the conditions.
+(3) If all tool calls fail in the generation process, the generator should retry the process.
 --------------------
 Something you should pay attention to:
 (1) Focus on checking the conditions based on the requirements. Do not check the content of the conditions and the source code.
-(2) Conditions do not necessarily align with the C/C++ program. For example, they will claim the program to do something it obviously does not. This is not a wrong generation because the warning may be false positive. You should not ask the condition generator to state that the warning is false positive. Instead, the generator gives correct conditions in this case.
-(3) Conditions do not necessarily describe the entire process that warning may happen, because some parts of the process are easy to judge or some code paths can obviously not be entered. For example, for a null pointer dereference warning, the conditions may only try to confirm the pointer is null because the dereference is obvious. In this case, the conditions are appropriate. Do not ask the condition generator to give the whole process.
 --------------------
-If you think the conditions do not have problems, the result is "Correct". Otherwise, the result is "Incorrect".
+
 Output your checking result in JSON format("```json" and "```" are necessary):
 ```json
 {"check_result": "Correct/Incorrect", "explanation": "..."}
 ```
-Do not output anything else. You should point out what is wrong and how to improve in the explanation. If result is correct, explanation is not needed.
+
+If you find that the conditions depend on each other which goes against the (1) requirement, output: 
+```json
+{"check_result": "Incorrect", "explanation": "Condition ... depends on condition ..., you'd better merge them"}
+```
+If you find that the conditions give direct conclusions which goes against the (2) requirement, output:
+```json
+{"check_result": "Incorrect", "explanation": "Condition ... give direct conclusions but this is not allowed."}
+```
+If you find that all tool calls fail which goes against the (3) requirement, output:
+```json
+{"check_result": "Incorrect", "explanation": "All tool calls fail. Retry."}
+```
+Otherwise, if the generation meets the 3 requirements, it is correct, output:
+```json
+{"check_result": "Correct", "explanation": ""}
+```
+Do not output anything else. 
 Then output TERMINATE
 '''
   )
