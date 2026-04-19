@@ -53,14 +53,35 @@ When generating conditions, you must strictly follow the steps below:
   (4.2) For functions, macros related with the warning inside this function, use tool "get_information_of_project" to search for them. Do not assume them to be some value. For functions, you need to determine its actual return value based on arguments and do not assume that the return value can be all possible return values of the function.
   (4.3) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
 (5) Then you can continue obtaining information and analyzing source code in your way.
-Output your analyzing process and intermediate results(such as variable value, function return value, pointer alias) in a format that you find easy to understand.
 --------------------
-
-You should combine the warning information and the confirmation conditions in JSON format and output it. You need to give a brief summary of your reasoning process in "Explanation".
+You should combine the analysis process, the intermediate results, the warning information and the confirmation conditions in JSON format and output it. You need to give a brief summary of your reasoning process in "Explanation".
 Please note that the JSON format must be("```json" and "```" are necessary in your answer):
 ```json
 {
   "Files": [...],
+  "Analyzing process":[
+    {
+      "function": "...",
+      "analysis":
+        {
+          "function1": "...", 
+          "variable1": "...", 
+          "pointer1": "...", 
+          ...
+          "overall analysis": "..."
+        }
+    },
+    ......
+    {
+      "condition generation analysis":{
+        "reminder": "All conditions should not depend on each others"
+        "step1": "...", 
+        "step2": "...", 
+        ...
+        "overall analysis": "..."
+      }
+    }
+  ]
   "Warning information":
   {
     "1": 
@@ -119,12 +140,28 @@ When judging conditions, you must strictly follow the steps below:
   (2.3) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
 (3) If some information(e.g. the parameters) can only be found in the callers, use "get_information_of_project" to get callers and calls recursively until you get the exact values by setting "option" to 6 and 8. Do not assume the variables you don't know to be any value. 
 (4) Then you can continue obtaining information and analyzing source code in your way.
-Output your analyzing process and intermediate results(such as variable value, function return value, pointer alias) in a format that you find easy to understand.
 --------------------
-You should output the results in JSON format("```json" and "```" are necessary):
+You should output the results, the analyzing process and intermediate results in JSON format("```json" and "```" are necessary):
 
 ```json
-{"result": "T/F/Unknown", "explanation": "..."}
+{
+  "result": "T/F/Unknown", 
+  "explanation": "...", 
+  "Analyzing process": [
+    {
+      "function": "...",
+      "analysis":
+        {
+          "function1": "...", 
+          "variable1": "...", 
+          "pointer1": "...", 
+          ...
+          "overall analysis": "..."
+        }
+    }, 
+    ......
+  ]
+}
 ```
 
 Then output TERMINATE
@@ -177,12 +214,12 @@ def create_condition_checker_agent():
       system_prompt = '''\
 You are cooperating with other agents to determine whether the warnings on a C/C++ project provided by a static analysis tool are true positive or false positive. The other agents have finished the following task: generate conditions to confirm warnings.
 You need to check the conditions based on the following requirements on conditions:
-(1) Conditions should be independent from each other. For example, "Confirmation conditions":{"1": "A is true", "2": "Based on A/If A is true/After the execution in A, ..."} is not allowed.
-(2) There must not be direct conclusions(the warning is true/false positive) in the conditions.
-(3) If all tool calls fail in the generation process, the generator should retry the process.
+(1) Conditions should not directly refer to other conditions. For example, "Confirmation conditions":{"1": "A is true", "2": "Based on A/If A is true/After the execution in A, ..."} is not allowed.
+(2) If all tool calls fail in the generation process, the generator should retry the process.
 --------------------
 Something you should pay attention to:
 (1) Focus on checking the conditions based on the requirements. Do not check the content of the conditions and the source code.
+(2) Conditions can include information from other conditions with sufficient details, but cannot directly refer to other conditions
 --------------------
 
 Output your checking result in JSON format("```json" and "```" are necessary):
@@ -190,19 +227,15 @@ Output your checking result in JSON format("```json" and "```" are necessary):
 {"check_result": "Correct/Incorrect", "explanation": "..."}
 ```
 
-If you find that the conditions depend on each other which goes against the (1) requirement, output: 
+If you find that the conditions directly refer to each other which goes against the (1) requirement, output: 
 ```json
-{"check_result": "Incorrect", "explanation": "Condition ... depends on condition ..., you'd better merge them"}
+{"check_result": "Incorrect", "explanation": "Condition ... directly refers to condition ..., you'd better merge them"}
 ```
-If you find that the conditions give direct conclusions which goes against the (2) requirement, output:
-```json
-{"check_result": "Incorrect", "explanation": "Condition ... give direct conclusions but this is not allowed."}
-```
-If you find that all tool calls fail which goes against the (3) requirement, output:
+If you find that all tool calls fail which goes against the (2) requirement, output:
 ```json
 {"check_result": "Incorrect", "explanation": "All tool calls fail. Retry."}
 ```
-Otherwise, if the generation meets the 3 requirements, it is correct, output:
+Otherwise, if the generation meets the 2 requirements, it is correct, output:
 ```json
 {"check_result": "Correct", "explanation": ""}
 ```
