@@ -38,7 +38,7 @@ def build_codequery_db(
 
             subprocess.run(
                 cmd, 
-                timeout=600, 
+                timeout=2000, 
                 capture_output=True, 
                 text=True, 
                 shell=True, 
@@ -119,7 +119,7 @@ def get_information_of_project(
     try:
         result = subprocess.run(
             cmd, 
-            timeout=300, 
+            timeout=600, 
             capture_output=True, 
             text=True, 
             shell=False, 

@@ -15,7 +15,6 @@ default_model = ChatOpenAI(
     api_key=API_KEY, 
     base_url=BASE_URL,
     timeout=600, 
-    reasoning_effort="medium", 
     temperature=0.2
 )
 

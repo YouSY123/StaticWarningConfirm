@@ -35,6 +35,27 @@ You can use the following function tools to help you:
 (4) view_one_function(file_path: str, line: int)
 When using "get_information_of_project" to search for definitions or calls, remember to set "filtered_by_path" to a high directory or "", otherwise, you may miss some information.
 
+Something you need to pay attention to when generating conditions:
+(1) Try to keep the number of conditions less than 5 for each warning. For easy warnings, 1 or 2 conditions are enough.
+(2) For warnings that happen in one certain execution path(e.g. double free, use after free), everything you need to confirm should be write in one condition. Otherwise, if you break it into multiple conditions, they may not be judged correctly.
+(3) Only focus on the warning given. If you find other bugs in the code, ignore them. Make sure the conditions you generate match the warning information(file, line, variable...) strictly.
+(4) Do not output the conclusion even if you think the warning is easy to judge. Only give conditions. For example, conditions like "(If)..., the warning is true/false positive" are not allowed.
+Something you need to pay attention to when inspecting the source code:
+(1) Some warnings seem to occur in one function, but they can be caused by repeated calls of the function. You should take this into consideration.
+(2) Functions can have multiple possible return values. When analyzing a function call, you cannot assume that all of them will be returned. Instead, you should analyze reachability based on the specific arguments and the function's code structure to determine the actual return value.
+--------------------
+When generating conditions, you must strictly follow the steps below:
+(1) Get examples from tool "get_example".
+(2) Get the function corresponding to the warning with the tool "view_one_function". Most static analysis tool will provide file and line.
+(3) Get callers and calls of this function by using tool "get_information_of_project" with "option" set to 6 and 8 and inspect them. You need to determine the specific argument values passed to the function. Some warnings are related with these calls, and you should inspect the callers in this case. If analyzing only the function's caller is insufficient, you can analyze higher-level callers recursively.
+(4) Carefully inspect the function corresponding to the warning. If necessary, inspect its callers:
+  (4.1) Analyze everything related with the warning in this function, including variable and parameter values, function return values, pointer alias, control flow, path reachability, etc.
+  (4.2) For functions, macros related with the warning inside this function, use tool "get_information_of_project" to search for them. Do not assume them to be some value. For functions, you need to determine its actual return value based on arguments and do not assume that the return value can be all possible return values of the function.
+  (4.3) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
+(5) Then you can continue obtaining information and analyzing source code in your way.
+Output your analyzing process and intermediate results(such as variable value, function return value, pointer alias) in a format that you find easy to understand.
+--------------------
+
 You should combine the warning information and the confirmation conditions in JSON format and output it. You need to give a brief summary of your reasoning process in "Explanation".
 Please note that the JSON format must be("```json" and "```" are necessary in your answer):
 ```json
@@ -60,26 +81,6 @@ Please note that the JSON format must be("```json" and "```" are necessary in yo
   }
 }
 ```
-
-Something you need to pay attention to when generating conditions:
-(1) Try to keep the number of conditions less than 5 for each warning. For easy warnings, 1 or 2 conditions are enough.
-(2) For warnings that happen in one certain execution path(e.g. double free, use after free), everything you need to confirm should be write in one condition. Otherwise, if you break it into multiple conditions, they may not be judged correctly.
-(3) Only focus on the warning given. If you find other bugs in the code, ignore them. Make sure the conditions you generate match the warning information(file, line, variable...) strictly.
-(4) Do not output the conclusion even if you think the warning is easy to judge. Only give conditions. For example, conditions like "(If)..., the warning is true/false positive" are not allowed.
-Something you need to pay attention to when inspecting the source code:
-(1) Some warnings seem to occur in one function, but they can be caused by repeated calls of the function. You should take this into consideration.
-(2) Functions can have multiple possible return values. When analyzing a function call, you cannot assume that all of them will be returned. Instead, you should analyze reachability based on the specific arguments and the function's code structure to determine the actual return value.
---------------------
-When generating conditions, you must strictly follow the steps below:
-(1) Get examples from tool "get_example".
-(2) Get the function corresponding to the warning with the tool "view_one_function". Most static analysis tool will provide file and line.
-(3) Get callers and calls of this function by using tool "get_information_of_project" with "option" set to 6 and 8 and inspect them. You need to determine the specific argument values passed to the function. Some warnings are related with these calls, and you should inspect the callers in this case. If analyzing only the function's caller is insufficient, you can analyze higher-level callers recursively.
-(4) Carefully inspect the function corresponding to the warning. If necessary, inspect its callers:
-  (4.1) Analyze everything related with the warning in this function, including variable and parameter values, function return values, pointer alias, control flow, path reachability, etc.
-  (4.2) For functions, macros related with the warning inside this function, use tool "get_information_of_project" to search for them. Do not assume them to be some value. For functions, you need to determine its actual return value based on arguments and do not assume that the return value can be all possible return values of the function.
-  (4.3) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
-(5) Then you can continue obtaining information and analyzing source code in your way.
---------------------
 
 Then output TERMINATE
 '''
@@ -118,14 +119,13 @@ When judging conditions, you must strictly follow the steps below:
   (2.3) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
 (3) If some information(e.g. the parameters) can only be found in the callers, use "get_information_of_project" to get callers and calls recursively until you get the exact values by setting "option" to 6 and 8. Do not assume the variables you don't know to be any value. 
 (4) Then you can continue obtaining information and analyzing source code in your way.
+Output your analyzing process and intermediate results(such as variable value, function return value, pointer alias) in a format that you find easy to understand.
 --------------------
 You should output the results in JSON format("```json" and "```" are necessary):
 
 ```json
 {"result": "T/F/Unknown", "explanation": "..."}
 ```
-
-Do not output anything else in the last turn. The explanation should be brief.
 
 Then output TERMINATE
 '''
