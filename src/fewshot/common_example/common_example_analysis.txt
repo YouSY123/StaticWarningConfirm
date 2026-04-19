@@ -98,7 +98,10 @@ if func1 return null when argument "num" equals 1, the warning is true positive.
       "Variable name": "ptr",
       "Line number": [35],
       "Confirmation conditions": {
-        "1": "When calling src/example.cpp:4:"func1" with "num"=1 in example.cpp:31:"int* ptr = func1(num);", the return value is null"
+        "1": {
+          "target": "return value of "func1",
+          "description": "When calling src/example.cpp:4:"func1" with "num"=1 in example.cpp:31:"int* ptr = func1(num);", the return value is null"
+        }
       }
     }
   }

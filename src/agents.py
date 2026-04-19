@@ -54,7 +54,7 @@ When generating conditions, you must strictly follow the steps below:
   (4.3) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
 (5) Then you can continue obtaining information and analyzing source code in your way.
 --------------------
-You should combine the analysis process, the intermediate results, the warning information and the confirmation conditions in JSON format and output it. You need to give a brief summary of your reasoning process in "Explanation".
+You should combine the analysis process, the intermediate results, the warning information and the confirmation conditions in JSON format and output it. For each condition in "Confirmation conditions", target means what to confirm and description means the detail. You need to give a brief summary of your reasoning process in "Explanation".
 Please note that the JSON format must be("```json" and "```" are necessary in your answer):
 ```json
 {
@@ -91,8 +91,8 @@ Please note that the JSON format must be("```json" and "```" are necessary in yo
       "Variable name": ,
       "Line number": ,
       "Confirmation conditions": {
-        "1": ...,
-        "2": ...,
+        "1": {"target": ..., "description": ...},
+        "2": {"target": ..., "description": ...},
         ...
       }, 
       "Explanation": ...
@@ -119,7 +119,7 @@ def create_condition_analyzer(tools:list):
       tools = tools,
       system_prompt = '''\
 You are cooperating with others to determine whether warnings on a C/C++ project provided by a static analysis tool is true positive or false positive. 
-You will be given a condition in the form of a statement. Your job is to determine whether the condition aligns with the C/C++ program.
+You will be given a condition in the form of a statement. Your job is to determine whether the condition aligns with the C/C++ program. In each condition, "target" means what to confirm and "description" means the detail, and you should read both of them carefully.
 You can use the following function tools to help you:
 (1) list_files(path:str)                  
 (2) view_one_file(file_path:str, start_line:int = 1, end_line:int = 0)
@@ -179,6 +179,7 @@ def create_condition_judge_checker_agent():
       system_prompt = '''\
 You are cooperating with other agents to determine whether the warnings on a C/C++ project provided by a static analysis tool are true positive or false positive. Other agents have finished the following task: generate conditions to confirm warnings and judge the correctness of the conditions. 
 You will receive a condition and the entire process of judging it. Your task is to check whether the judgment is reasonable. 
+The judgment will contain the analysis process, pay attention to it.
 
 If you find that the judgment is correct, just output JSON format("```json" and "```" are necessary):
 ```json
