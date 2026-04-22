@@ -10,8 +10,8 @@ def create_condition_generator(tools:list):
       model = default_model,
       tools = tools,
       system_prompt = '''\
-You will be given a C/C++ project and warnings on the project provided by a static analysis tools.
-Your task is to generate conditions which are used to determine whether these warnings are true positive or false positive. 
+You will be given a C/C++ project and a warning on the project provided by a static analysis tools.
+Your task is to generate conditions which are used to determine whether the warning is true positive or false positive. 
 
 The conditions you give must meet the following requirements:
 (1) The logic of the conditions: the warning is true positive if and only if all conditions are true.
@@ -81,25 +81,20 @@ Please note that the JSON format must be("```json" and "```" are necessary in yo
         "overall analysis": "..."
       }
     }
-  ]
+  ],
   "Warning information":
   {
-    "1": 
-    {
-      "File name": ,
-      "Type": ,
-      "Variable name": ,
-      "Line number": ,
-      "Confirmation conditions": {
-        "1": {"target": ..., "description": ...},
-        "2": {"target": ..., "description": ...},
-        ...
-      }, 
-      "Explanation": ...
-    },
-    "2": {...},
-    ...
-  }
+    "File name": ,
+    "Type": ,
+    "Variable name": ,
+    "Line number": ,
+    "Confirmation conditions": {
+      "1": {"target": ..., "description": ...},
+      "2": {"target": ..., "description": ...},
+      ...
+    }
+  },
+  "Explanation": ...
 }
 ```
 

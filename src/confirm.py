@@ -78,3 +78,11 @@ def confirm_project(
         f.close()
 
     return result_list
+
+confirm(
+    project_dir="/home/shuyang/Project/Static-Inspection-bugs/tmux-check",
+    static_analysis_result=f"Use after free:\nfree at cmd-capture-pane.c:207\nuse at window.c:1318",
+    log_path="/home/shuyang/Project/log_test.txt",
+    result_path="/home/shuyang/Project/res_test.txt",
+    database_path="/home/shuyang/Project/temp"
+)

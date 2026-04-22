@@ -74,7 +74,7 @@ class StaticAnalysisWarningsConfirmation:
 
                 result = await condition_generator.ainvoke(
                     {"messages": [{"role": "user", "content": input_info + checker_info}]},
-                    {"recursion_limit": 50}
+                    {"recursion_limit": 100}
                 )
 
             except Exception as e:
@@ -100,7 +100,7 @@ class StaticAnalysisWarningsConfirmation:
 
                 checker_result = await checker.ainvoke(
                     {"messages": [{"role": "user", "content": checker_prompt}]},
-                    {"recursion_limit": 50}
+                    {"recursion_limit": 100}
                 )
 
             except Exception as e:
@@ -189,7 +189,7 @@ class StaticAnalysisWarningsConfirmation:
                     result = await condition_analyzer.ainvoke(
                         {"messages": [{"role": "user", "content": json_info + checker_info}, 
                                       {"role": "user", "content": get_examples_for_condition_analysis()}]},
-                        {"recursion_limit": 50}
+                        {"recursion_limit": 100}
                     )
 
                 except Exception as e:
@@ -219,7 +219,7 @@ class StaticAnalysisWarningsConfirmation:
                     condition_judge_checker = create_condition_judge_checker_agent()
                     checker_result = await condition_judge_checker.ainvoke(
                         {"messages": [{"role": "user", "content": checker_prompt}]},
-                        {"recursion_limit": 50}
+                        {"recursion_limit": 100}
                     )
 
                 except Exception as e:
@@ -338,56 +338,60 @@ class StaticAnalysisWarningsConfirmation:
             # check if conditions format is correct
             judger_prompt = []
             if 'Warning information' in conditions_json:
-                for w in conditions_json['Warning information']:
-                    warning = conditions_json['Warning information'][w]
-                    if "Confirmation conditions" in warning:
-                        for c in warning["Confirmation conditions"]:
-                            confirmation = warning["Confirmation conditions"][c]
-                            new_prompt_json = deepcopy(warning)
-                            new_prompt_json["Confirmation conditions"] = confirmation
-                            if "Explanation" in new_prompt_json:
-                                new_prompt_json.pop("Explanation")
-                            judger_prompt.append(json.dumps(new_prompt_json))
+                warning = conditions_json['Warning information']
+                if "Confirmation conditions" in warning:
+                    for c in warning["Confirmation conditions"]:
+                        confirmation = warning["Confirmation conditions"][c]
+                        new_prompt_json = deepcopy(warning)
+                        new_prompt_json["Confirmation conditions"] = confirmation
+                        if "Type" in new_prompt_json:
+                            new_prompt_json.pop("Type")
+                        judger_prompt.append(json.dumps(new_prompt_json))
+                else:
+                    condition_retry += 1
+                    if condition_retry > CONDITION_GENERATE_RETRY_TIMES:
+                        return ["Condition generation failed."]
                     else:
                         write_result(f"Wrong format of conditions. Retry\n", self.result_path)
                         continue
             else:
-                write_result(f"Wrong format of conditions. Retry\n", self.result_path)
-                continue
+                condition_retry += 1
+                if condition_retry > CONDITION_GENERATE_RETRY_TIMES:
+                    return ["Condition generation failed."]
+                else:
+                    write_result(f"Wrong format of conditions. Retry\n", self.result_path)
+                    continue
 
             break
         
         judge_tasks = [self.judge_conditions(json_info, [list_files, view_one_file, get_information_of_project, view_one_function], idx+1) for idx, json_info in enumerate(judger_prompt)]
         llm_results = await asyncio.gather(*judge_tasks)
-        result = []
+
         result_ptr = 0
-        for w in conditions_json['Warning information']:
-            warning = conditions_json['Warning information'][w]
-            warning_result = {}
-            for index_condition, c in enumerate(warning["Confirmation conditions"]):
-                warning_result[str(index_condition+1)] = llm_results[result_ptr]
-                result_ptr += 1
-            result.append(warning_result)
+        warning = conditions_json['Warning information']
+        warning_result = {}
+        for index_condition, c in enumerate(warning["Confirmation conditions"]):
+            warning_result[str(index_condition+1)] = llm_results[result_ptr]
+            result_ptr += 1
 
-        print_client_log('Results for conditions', f"conditions:\n{str(conditions_json)}\nresults:\n{str(result)}", self.log_path)
+        print_client_log('Results for conditions', f"conditions:\n{str(conditions_json)}\nresults:\n{str(warning_result)}", self.log_path)
 
-        final_results = []
-        for c in result:
-            condition_result = 'True positive'
+        print(json.dumps(llm_results, indent=4))
+        print(json.dumps(warning_result, indent=4))
 
-            for key, r in c.items():
-                if (list(r.values()))[0] == 'Unknown':
-                    condition_result = 'Unknown'
-                    break
-            for key, r in c.items():
-                if (list(r.values()))[0] == 'F':
-                    condition_result = 'False positive'
-                    break
-            
-            final_results.append(condition_result)
-        print_client_log('Final results', str(condition_result), self.log_path)
+        final_result = "True positive"
+        for key, r in warning_result.items():
+            if (list(r.values()))[0] == 'Unknown':
+                final_result = 'Unknown'
+                break
+        for key, r in warning_result.items():
+            if (list(r.values()))[0] == 'F':
+                final_result = 'False positive'
+                break
+ 
+        print_client_log('Final results', str(final_result), self.log_path)
 
-        write_result(f"\nFinal results: {final_results}\n", self.result_path)
-        write_result(f"\nCondition judgment: {json.dumps(result, indent=4)}\n", self.result_path)
+        write_result(f"\nFinal results: {final_result}\n", self.result_path)
+        write_result(f"\nCondition judgment: {json.dumps(warning_result, indent=4)}\n", self.result_path)
 
-        return final_results
+        return final_result
