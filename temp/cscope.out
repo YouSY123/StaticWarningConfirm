@@ -1,0 +1,6010 @@
+cscope 15 $HOME/StaticWarningConfirm/src/fewshot/condition_judge2 -c               0000043167
+	@example.cpp
+
+1 #include
+	~<stdlib.h
+>
+
+3 #define 
+	#ABCDEFG
+ 100
+
+	)
+
+4 #ifdef 
+ABCDEFG
+
+
+5 #define 
+	#XYZ
+
+
+	)
+
+8 int 
+	$foo
+(int 
+arg1
+)
+
+11 #ifdef 
+XYZ
+
+
+12 int 
+var
+ = 
+arg1
+ - 
+ABCDEFG
+;
+
+13 return 
+var
+;
+
+16 return 
+ABCDEFG
+;
+
+17 
+	}
+}
+
+19 void 
+	$get_ptr
+(int 
+arg1
+, char* 
+get_ptr
+)
+
+22 int 
+var1
+ = 
+	`foo
+(
+arg1
+);
+
+23 if(
+var1
+ > 0)
+
+25 char* 
+ptr
+ = 
+nullptr
+;
+
+26 
+ptr
+ = (char*)
+	`malloc
+(
+var1
+);
+
+27 
+get_ptr
+ = 
+ptr
+;
+
+33 
+	}
+}
+
+35 int 
+	$main
+()
+
+37 char* 
+pointer
+ = 
+nullptr
+;
+
+38 
+	`get_ptr
+(20, 
+pointer
+);
+
+39 
+pointer
+[0] = 'a';
+
+41 
+	}
+}
+
+	@/usr/include/stdlib.h
+
+23 #ifndef 
+_STDLIB_H
+
+
+25 #define 
+	#__GLIBC_INTERNAL_STARTING_HEADER_IMPLEMENTATION
+
+
+	)
+
+26 #include 
+	~<bits/libc-header-start.h
+>
+
+29 #define 
+	#__need_size_t
+
+
+	)
+
+30 #define 
+	#__need_wchar_t
+
+
+	)
+
+31 #define 
+	#__need_NULL
+
+
+	)
+
+32 #include 
+	~<stddef.h
+>
+
+34 
+	g__BEGIN_DECLS
+
+
+36 #define 
+	#_STDLIB_H
+ 1
+
+	)
+
+38 #if (
+defined
+ 
+__USE_XOPEN
+ || defined 
+__USE_XOPEN2K8
+) && !defined 
+_SYS_WAIT_H
+
+
+40 #include 
+	~<bits/waitflags.h
+>
+
+41 #include 
+	~<bits/waitstatus.h
+>
+
+44 #define 
+	#WEXITSTATUS
+(
+status
+) 
+	`__WEXITSTATUS
+ (status)
+
+	)
+
+45 #define 
+	#WTERMSIG
+(
+status
+) 
+	`__WTERMSIG
+ (status)
+
+	)
+
+46 #define 
+	#WSTOPSIG
+(
+status
+) 
+	`__WSTOPSIG
+ (status)
+
+	)
+
+47 #define 
+	#WIFEXITED
+(
+status
+) 
+	`__WIFEXITED
+ (status)
+
+	)
+
+48 #define 
+	#WIFSIGNALED
+(
+status
+) 
+	`__WIFSIGNALED
+ (status)
+
+	)
+
+49 #define 
+	#WIFSTOPPED
+(
+status
+) 
+	`__WIFSTOPPED
+ (status)
+
+	)
+
+50 #ifdef 
+__WIFCONTINUED
+
+
+51 #define 
+	#WIFCONTINUED
+(
+status
+) 
+	`__WIFCONTINUED
+ (status)
+
+	)
+
+56 #include 
+	~<bits/floatn.h
+>
+
+61 int 
+	mquot
+;
+
+62 int 
+	mrem
+;
+
+63 } 
+	tdiv_t
+;
+
+66 #ifndef 
+__ldiv_t_defined
+
+
+69 long int 
+	mquot
+;
+
+70 long int 
+	mrem
+;
+
+71 } 
+	tldiv_t
+;
+
+72 #define 
+	#__ldiv_t_defined
+ 1
+
+	)
+
+75 #if 
+defined
+ 
+__USE_ISOC99
+ && !defined 
+__lldiv_t_defined
+
+
+77 
+__extension__
+ typedef struct
+
+79 long long int 
+	mquot
+;
+
+80 long long int 
+	mrem
+;
+
+81 } 
+	tlldiv_t
+;
+
+82 #define 
+	#__lldiv_t_defined
+ 1
+
+	)
+
+87 #define 
+	#RAND_MAX
+ 2147483647
+
+	)
+
+92 #define 
+	#EXIT_FAILURE
+ 1
+
+	)
+
+93 #define 
+	#EXIT_SUCCESS
+ 0
+
+	)
+
+97 #define 
+	#MB_CUR_MAX
+ (
+	`__ctype_get_mb_cur_max
+ ())
+
+	)
+
+98 extern 
+size_t
+ 
+	$__ctype_get_mb_cur_max
+ (void) 
+__THROW
+ 
+__wur
+;
+
+102 extern double 
+	$atof
+ (const char *
+__nptr
+)
+
+103 
+__THROW
+ 
+__attribute_pure__
+ 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+105 extern int 
+	$atoi
+ (const char *
+__nptr
+)
+
+106 
+__THROW
+ 
+__attribute_pure__
+ 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+108 extern long int 
+	$atol
+ (const char *
+__nptr
+)
+
+109 
+__THROW
+ 
+__attribute_pure__
+ 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+111 #ifdef 
+__USE_ISOC99
+
+
+113 
+__extension__
+ extern long long int 
+	$atoll
+ (const char *
+__nptr
+)
+
+114 
+__THROW
+ 
+__attribute_pure__
+ 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+118 extern double 
+	$strtod
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+119 char **
+__restrict
+ 
+__endptr
+)
+
+120 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+122 #ifdef 
+__USE_ISOC99
+
+
+124 extern float 
+	$strtof
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+125 char **
+__restrict
+ 
+__endptr
+) 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+127 extern long double 
+	$strtold
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+128 char **
+__restrict
+ 
+__endptr
+)
+
+129 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+134 #if 
+__HAVE_FLOAT16
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+135 extern 
+_Float16
+ 
+	$strtof16
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+136 char **
+__restrict
+ 
+__endptr
+)
+
+137 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+140 #if 
+__HAVE_FLOAT32
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+141 extern 
+_Float32
+ 
+	$strtof32
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+142 char **
+__restrict
+ 
+__endptr
+)
+
+143 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+146 #if 
+__HAVE_FLOAT64
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+147 extern 
+_Float64
+ 
+	$strtof64
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+148 char **
+__restrict
+ 
+__endptr
+)
+
+149 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+152 #if 
+__HAVE_FLOAT128
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+153 extern 
+_Float128
+ 
+	$strtof128
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+154 char **
+__restrict
+ 
+__endptr
+)
+
+155 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+158 #if 
+__HAVE_FLOAT32X
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+159 extern 
+_Float32x
+ 
+	$strtof32x
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+160 char **
+__restrict
+ 
+__endptr
+)
+
+161 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+164 #if 
+__HAVE_FLOAT64X
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+165 extern 
+_Float64x
+ 
+	$strtof64x
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+166 char **
+__restrict
+ 
+__endptr
+)
+
+167 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+170 #if 
+__HAVE_FLOAT128X
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+171 extern 
+_Float128x
+ 
+	$strtof128x
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+172 char **
+__restrict
+ 
+__endptr
+)
+
+173 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+177 extern long int 
+	$strtol
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+178 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+)
+
+179 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+181 extern unsigned long int 
+	$strtoul
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+182 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+)
+
+183 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+185 #ifdef 
+__USE_MISC
+
+
+187 
+__extension__
+
+
+188 extern long long int 
+	$strtoq
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+189 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+)
+
+190 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+192 
+__extension__
+
+
+193 extern unsigned long long int 
+	$strtouq
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+194 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+)
+
+195 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+198 #ifdef 
+__USE_ISOC99
+
+
+200 
+__extension__
+
+
+201 extern long long int 
+	$strtoll
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+202 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+)
+
+203 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+205 
+__extension__
+
+
+206 extern unsigned long long int 
+	$strtoull
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+207 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+)
+
+208 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+213 #if 
+	`__GLIBC_USE
+ (
+C2X_STRTOL
+)
+
+214 #ifdef 
+__REDIRECT
+
+
+215 extern long int 
+	`__REDIRECT_NTH
+ (
+strtol
+, (const char *
+__restrict
+ 
+__nptr
+,
+
+216 char **
+__restrict
+ 
+__endptr
+,
+
+217 int 
+__base
+), 
+__isoc23_strtol
+)
+
+218 
+	`__nonnull
+ ((1));
+
+219 extern unsigned long int 
+	`__REDIRECT_NTH
+ (
+strtoul
+,
+
+220 (const char *
+__restrict
+ 
+__nptr
+,
+
+221 char **
+__restrict
+ 
+__endptr
+,
+
+222 int 
+__base
+), 
+__isoc23_strtoul
+)
+
+223 
+	`__nonnull
+ ((1));
+
+224 #ifdef 
+__USE_MISC
+
+
+225 
+__extension__
+
+
+226 extern long long int 
+	`__REDIRECT_NTH
+ (
+strtoq
+, (const char *
+__restrict
+ 
+__nptr
+,
+
+227 char **
+__restrict
+ 
+__endptr
+,
+
+228 int 
+__base
+), 
+__isoc23_strtoll
+)
+
+229 
+	`__nonnull
+ ((1));
+
+230 
+__extension__
+
+
+231 extern unsigned long long int 
+	`__REDIRECT_NTH
+ (
+strtouq
+,
+
+232 (const char *
+__restrict
+ 
+__nptr
+,
+
+233 char **
+__restrict
+ 
+__endptr
+,
+
+234 int 
+__base
+), 
+__isoc23_strtoull
+)
+
+235 
+	`__nonnull
+ ((1));
+
+237 
+__extension__
+
+
+238 extern long long int 
+	`__REDIRECT_NTH
+ (
+strtoll
+, (const char *
+__restrict
+ 
+__nptr
+,
+
+239 char **
+__restrict
+ 
+__endptr
+,
+
+240 int 
+__base
+), 
+__isoc23_strtoll
+)
+
+241 
+	`__nonnull
+ ((1));
+
+242 
+__extension__
+
+
+243 extern unsigned long long int 
+	`__REDIRECT_NTH
+ (
+strtoull
+,
+
+244 (const char *
+__restrict
+ 
+__nptr
+,
+
+245 char **
+__restrict
+ 
+__endptr
+,
+
+246 int 
+__base
+), 
+__isoc23_strtoull
+)
+
+247 
+	`__nonnull
+ ((1));
+
+249 extern long int 
+	$__isoc23_strtol
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+250 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+)
+
+251 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+252 extern unsigned long int 
+	$__isoc23_strtoul
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+253 char **
+__restrict
+ 
+__endptr
+,
+
+254 int 
+__base
+)
+
+255 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+256 
+__extension__
+
+
+257 extern long long int 
+	$__isoc23_strtoll
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+258 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+)
+
+259 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+260 
+__extension__
+
+
+261 extern unsigned long long int 
+	$__isoc23_strtoull
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+262 char **
+__restrict
+ 
+__endptr
+,
+
+263 int 
+__base
+)
+
+264 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+265 #define 
+	#strtol
+ 
+__isoc23_strtol
+
+
+	)
+
+266 #define 
+	#strtoul
+ 
+__isoc23_strtoul
+
+
+	)
+
+267 #ifdef 
+__USE_MISC
+
+
+268 #define 
+	#strtoq
+ 
+__isoc23_strtoll
+
+
+	)
+
+269 #define 
+	#strtouq
+ 
+__isoc23_strtoull
+
+
+	)
+
+271 #define 
+	#strtoll
+ 
+__isoc23_strtoll
+
+
+	)
+
+272 #define 
+	#strtoull
+ 
+__isoc23_strtoull
+
+
+	)
+
+277 #if 
+	`__GLIBC_USE
+ (
+IEC_60559_BFP_EXT_C2X
+)
+
+278 extern int 
+	$strfromd
+ (char *
+__dest
+, 
+size_t
+ 
+__size
+, const char *
+__format
+,
+
+279 double 
+__f
+)
+
+280 
+__THROW
+ 
+	`__nonnull
+ ((3));
+
+282 extern int 
+	$strfromf
+ (char *
+__dest
+, 
+size_t
+ 
+__size
+, const char *
+__format
+,
+
+283 float 
+__f
+)
+
+284 
+__THROW
+ 
+	`__nonnull
+ ((3));
+
+286 extern int 
+	$strfroml
+ (char *
+__dest
+, 
+size_t
+ 
+__size
+, const char *
+__format
+,
+
+287 long double 
+__f
+)
+
+288 
+__THROW
+ 
+	`__nonnull
+ ((3));
+
+291 #if 
+__HAVE_FLOAT16
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+292 extern int 
+	$strfromf16
+ (char *
+__dest
+, 
+size_t
+ 
+__size
+, const char * 
+__format
+,
+
+293 
+_Float16
+ 
+__f
+)
+
+294 
+__THROW
+ 
+	`__nonnull
+ ((3));
+
+297 #if 
+__HAVE_FLOAT32
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+298 extern int 
+	$strfromf32
+ (char *
+__dest
+, 
+size_t
+ 
+__size
+, const char * 
+__format
+,
+
+299 
+_Float32
+ 
+__f
+)
+
+300 
+__THROW
+ 
+	`__nonnull
+ ((3));
+
+303 #if 
+__HAVE_FLOAT64
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+304 extern int 
+	$strfromf64
+ (char *
+__dest
+, 
+size_t
+ 
+__size
+, const char * 
+__format
+,
+
+305 
+_Float64
+ 
+__f
+)
+
+306 
+__THROW
+ 
+	`__nonnull
+ ((3));
+
+309 #if 
+__HAVE_FLOAT128
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+310 extern int 
+	$strfromf128
+ (char *
+__dest
+, 
+size_t
+ 
+__size
+, const char * 
+__format
+,
+
+311 
+_Float128
+ 
+__f
+)
+
+312 
+__THROW
+ 
+	`__nonnull
+ ((3));
+
+315 #if 
+__HAVE_FLOAT32X
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+316 extern int 
+	$strfromf32x
+ (char *
+__dest
+, 
+size_t
+ 
+__size
+, const char * 
+__format
+,
+
+317 
+_Float32x
+ 
+__f
+)
+
+318 
+__THROW
+ 
+	`__nonnull
+ ((3));
+
+321 #if 
+__HAVE_FLOAT64X
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+322 extern int 
+	$strfromf64x
+ (char *
+__dest
+, 
+size_t
+ 
+__size
+, const char * 
+__format
+,
+
+323 
+_Float64x
+ 
+__f
+)
+
+324 
+__THROW
+ 
+	`__nonnull
+ ((3));
+
+327 #if 
+__HAVE_FLOAT128X
+ && 
+	`__GLIBC_USE
+ (
+IEC_60559_TYPES_EXT
+)
+
+328 extern int 
+	$strfromf128x
+ (char *
+__dest
+, 
+size_t
+ 
+__size
+, const char * 
+__format
+,
+
+329 
+_Float128x
+ 
+__f
+)
+
+330 
+__THROW
+ 
+	`__nonnull
+ ((3));
+
+334 #ifdef 
+__USE_GNU
+
+
+338 #include 
+	~<bits/types/locale_t.h
+>
+
+340 extern long int 
+	$strtol_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+341 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+,
+
+342 
+locale_t
+ 
+__loc
+) 
+__THROW
+ 
+	`__nonnull
+ ((1, 4));
+
+344 extern unsigned long int 
+	$strtoul_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+345 char **
+__restrict
+ 
+__endptr
+,
+
+346 int 
+__base
+, 
+locale_t
+ 
+__loc
+)
+
+347 
+__THROW
+ 
+	`__nonnull
+ ((1, 4));
+
+349 
+__extension__
+
+
+350 extern long long int 
+	$strtoll_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+351 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+,
+
+352 
+locale_t
+ 
+__loc
+)
+
+353 
+__THROW
+ 
+	`__nonnull
+ ((1, 4));
+
+355 
+__extension__
+
+
+356 extern unsigned long long int 
+	$strtoull_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+357 char **
+__restrict
+ 
+__endptr
+,
+
+358 int 
+__base
+, 
+locale_t
+ 
+__loc
+)
+
+359 
+__THROW
+ 
+	`__nonnull
+ ((1, 4));
+
+363 #if 
+	`__GLIBC_USE
+ (
+C2X_STRTOL
+)
+
+364 #ifdef 
+__REDIRECT
+
+
+365 extern long int 
+	`__REDIRECT_NTH
+ (
+strtol_l
+, (const char *
+__restrict
+ 
+__nptr
+,
+
+366 char **
+__restrict
+ 
+__endptr
+,
+
+367 int 
+__base
+, 
+locale_t
+ 
+__loc
+),
+
+368 
+__isoc23_strtol_l
+)
+
+369 
+	`__nonnull
+ ((1, 4));
+
+370 extern unsigned long int 
+	`__REDIRECT_NTH
+ (
+strtoul_l
+,
+
+371 (const char *
+__restrict
+ 
+__nptr
+,
+
+372 char **
+__restrict
+ 
+__endptr
+,
+
+373 int 
+__base
+, 
+locale_t
+ 
+__loc
+),
+
+374 
+__isoc23_strtoul_l
+)
+
+375 
+	`__nonnull
+ ((1, 4));
+
+376 
+__extension__
+
+
+377 extern long long int 
+	`__REDIRECT_NTH
+ (
+strtoll_l
+, (const char *
+__restrict
+ 
+__nptr
+,
+
+378 char **
+__restrict
+ 
+__endptr
+,
+
+379 int 
+__base
+,
+
+380 
+locale_t
+ 
+__loc
+),
+
+381 
+__isoc23_strtoll_l
+)
+
+382 
+	`__nonnull
+ ((1, 4));
+
+383 
+__extension__
+
+
+384 extern unsigned long long int 
+	`__REDIRECT_NTH
+ (
+strtoull_l
+,
+
+385 (const char *
+__restrict
+ 
+__nptr
+,
+
+386 char **
+__restrict
+ 
+__endptr
+,
+
+387 int 
+__base
+, 
+locale_t
+ 
+__loc
+),
+
+388 
+__isoc23_strtoull_l
+)
+
+389 
+	`__nonnull
+ ((1, 4));
+
+391 extern long int 
+	$__isoc23_strtol_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+392 char **
+__restrict
+ 
+__endptr
+, int 
+__base
+,
+
+393 
+locale_t
+ 
+__loc
+) 
+__THROW
+ 
+	`__nonnull
+ ((1, 4));
+
+394 extern unsigned long int 
+	$__isoc23_strtoul_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+395 char **
+__restrict
+ 
+__endptr
+,
+
+396 int 
+__base
+, 
+locale_t
+ 
+__loc
+)
+
+397 
+__THROW
+ 
+	`__nonnull
+ ((1, 4));
+
+398 
+__extension__
+
+
+399 extern long long int 
+	$__isoc23_strtoll_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+400 char **
+__restrict
+ 
+__endptr
+,
+
+401 int 
+__base
+, 
+locale_t
+ 
+__loc
+)
+
+402 
+__THROW
+ 
+	`__nonnull
+ ((1, 4));
+
+403 
+__extension__
+
+
+404 extern unsigned long long int 
+	$__isoc23_strtoull_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+405 char **
+__restrict
+ 
+__endptr
+,
+
+406 int 
+__base
+, 
+locale_t
+ 
+__loc
+)
+
+407 
+__THROW
+ 
+	`__nonnull
+ ((1, 4));
+
+408 #define 
+	#strtol_l
+ 
+__isoc23_strtol_l
+
+
+	)
+
+409 #define 
+	#strtoul_l
+ 
+__isoc23_strtoul_l
+
+
+	)
+
+410 #define 
+	#strtoll_l
+ 
+__isoc23_strtoll_l
+
+
+	)
+
+411 #define 
+	#strtoull_l
+ 
+__isoc23_strtoull_l
+
+
+	)
+
+415 extern double 
+	$strtod_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+416 char **
+__restrict
+ 
+__endptr
+, 
+locale_t
+ 
+__loc
+)
+
+417 
+__THROW
+ 
+	`__nonnull
+ ((1, 3));
+
+419 extern float 
+	$strtof_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+420 char **
+__restrict
+ 
+__endptr
+, 
+locale_t
+ 
+__loc
+)
+
+421 
+__THROW
+ 
+	`__nonnull
+ ((1, 3));
+
+423 extern long double 
+	$strtold_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+424 char **
+__restrict
+ 
+__endptr
+,
+
+425 
+locale_t
+ 
+__loc
+)
+
+426 
+__THROW
+ 
+	`__nonnull
+ ((1, 3));
+
+428 #if 
+__HAVE_FLOAT16
+
+
+429 extern 
+_Float16
+ 
+	$strtof16_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+430 char **
+__restrict
+ 
+__endptr
+,
+
+431 
+locale_t
+ 
+__loc
+)
+
+432 
+__THROW
+ 
+	`__nonnull
+ ((1, 3));
+
+435 #if 
+__HAVE_FLOAT32
+
+
+436 extern 
+_Float32
+ 
+	$strtof32_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+437 char **
+__restrict
+ 
+__endptr
+,
+
+438 
+locale_t
+ 
+__loc
+)
+
+439 
+__THROW
+ 
+	`__nonnull
+ ((1, 3));
+
+442 #if 
+__HAVE_FLOAT64
+
+
+443 extern 
+_Float64
+ 
+	$strtof64_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+444 char **
+__restrict
+ 
+__endptr
+,
+
+445 
+locale_t
+ 
+__loc
+)
+
+446 
+__THROW
+ 
+	`__nonnull
+ ((1, 3));
+
+449 #if 
+__HAVE_FLOAT128
+
+
+450 extern 
+_Float128
+ 
+	$strtof128_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+451 char **
+__restrict
+ 
+__endptr
+,
+
+452 
+locale_t
+ 
+__loc
+)
+
+453 
+__THROW
+ 
+	`__nonnull
+ ((1, 3));
+
+456 #if 
+__HAVE_FLOAT32X
+
+
+457 extern 
+_Float32x
+ 
+	$strtof32x_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+458 char **
+__restrict
+ 
+__endptr
+,
+
+459 
+locale_t
+ 
+__loc
+)
+
+460 
+__THROW
+ 
+	`__nonnull
+ ((1, 3));
+
+463 #if 
+__HAVE_FLOAT64X
+
+
+464 extern 
+_Float64x
+ 
+	$strtof64x_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+465 char **
+__restrict
+ 
+__endptr
+,
+
+466 
+locale_t
+ 
+__loc
+)
+
+467 
+__THROW
+ 
+	`__nonnull
+ ((1, 3));
+
+470 #if 
+__HAVE_FLOAT128X
+
+
+471 extern 
+_Float128x
+ 
+	$strtof128x_l
+ (const char *
+__restrict
+ 
+__nptr
+,
+
+472 char **
+__restrict
+ 
+__endptr
+,
+
+473 
+locale_t
+ 
+__loc
+)
+
+474 
+__THROW
+ 
+	`__nonnull
+ ((1, 3));
+
+479 #ifdef 
+__USE_EXTERN_INLINES
+
+
+480 
+__extern_inline
+ int
+
+481 
+	`__NTH
+ (
+	$atoi
+ (const char *
+__nptr
+))
+
+483 return (int) 
+	`strtol
+ (
+__nptr
+, (char **) 
+NULL
+, 10);
+
+484 
+	}
+}
+
+485 
+__extern_inline
+ long int
+
+486 
+__NTH
+ (
+	$atol
+ (const char *
+__nptr
+))
+
+488 return 
+	`strtol
+ (
+__nptr
+, (char **) 
+NULL
+, 10);
+
+489 
+	}
+}
+
+491 #ifdef 
+__USE_ISOC99
+
+
+492 
+__extension__
+ 
+__extern_inline
+ long long int
+
+493 
+__NTH
+ (
+	$atoll
+ (const char *
+__nptr
+))
+
+495 return 
+	`strtoll
+ (
+__nptr
+, (char **) 
+NULL
+, 10);
+
+496 
+	}
+}
+
+501 #if 
+defined
+ 
+__USE_MISC
+ || defined 
+__USE_XOPEN_EXTENDED
+
+
+505 extern char *
+	$l64a
+ (long int 
+__n
+) 
+__THROW
+ 
+__wur
+;
+
+508 extern long int 
+	$a64l
+ (const char *
+__s
+)
+
+509 
+__THROW
+ 
+__attribute_pure__
+ 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+513 #if 
+defined
+ 
+__USE_MISC
+ || defined 
+__USE_XOPEN_EXTENDED
+
+
+514 #include 
+	~<sys/types.h
+>
+
+521 extern long int 
+	$random
+ (void) 
+__THROW
+;
+
+524 extern void 
+	$srandom
+ (unsigned int 
+__seed
+) 
+__THROW
+;
+
+530 extern char *
+	$initstate
+ (unsigned int 
+__seed
+, char *
+__statebuf
+,
+
+531 
+size_t
+ 
+__statelen
+) 
+__THROW
+ 
+	`__nonnull
+ ((2));
+
+535 extern char *
+	$setstate
+ (char *
+__statebuf
+) 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+538 #ifdef 
+__USE_MISC
+
+
+543 struct 
+	srandom_data
+
+
+545 
+int32_t
+ *
+fptr
+;
+
+546 
+int32_t
+ *
+rptr
+;
+
+547 
+int32_t
+ *
+state
+;
+
+548 int 
+rand_type
+;
+
+549 int 
+rand_deg
+;
+
+550 int 
+rand_sep
+;
+
+551 
+int32_t
+ *
+end_ptr
+;
+
+554 extern int 
+	$random_r
+ (struct 
+random_data
+ *
+__restrict
+ 
+__buf
+,
+
+555 
+int32_t
+ *
+__restrict
+ 
+__result
+) 
+__THROW
+ 
+	`__nonnull
+ ((1, 2));
+
+557 extern int 
+	$srandom_r
+ (unsigned int 
+__seed
+, struct 
+random_data
+ *
+__buf
+)
+
+558 
+__THROW
+ 
+	`__nonnull
+ ((2));
+
+560 extern int 
+	$initstate_r
+ (unsigned int 
+__seed
+, char *
+__restrict
+ 
+__statebuf
+,
+
+561 
+size_t
+ 
+__statelen
+,
+
+562 struct 
+random_data
+ *
+__restrict
+ 
+__buf
+)
+
+563 
+__THROW
+ 
+	`__nonnull
+ ((2, 4));
+
+565 extern int 
+	$setstate_r
+ (char *
+__restrict
+ 
+__statebuf
+,
+
+566 struct 
+random_data
+ *
+__restrict
+ 
+__buf
+)
+
+567 
+__THROW
+ 
+	`__nonnull
+ ((1, 2));
+
+573 extern int 
+	$rand
+ (void) 
+__THROW
+;
+
+575 extern void 
+	$srand
+ (unsigned int 
+__seed
+) 
+__THROW
+;
+
+577 #ifdef 
+__USE_POSIX199506
+
+
+579 extern int 
+	$rand_r
+ (unsigned int *
+__seed
+) 
+__THROW
+;
+
+583 #if 
+defined
+ 
+__USE_MISC
+ || defined 
+__USE_XOPEN
+
+
+587 extern double 
+	$drand48
+ (void) 
+__THROW
+;
+
+588 extern double 
+	$erand48
+ (unsigned short int 
+__xsubi
+[3]) 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+591 extern long int 
+	$lrand48
+ (void) 
+__THROW
+;
+
+592 extern long int 
+	$nrand48
+ (unsigned short int 
+__xsubi
+[3])
+
+593 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+596 extern long int 
+	$mrand48
+ (void) 
+__THROW
+;
+
+597 extern long int 
+	$jrand48
+ (unsigned short int 
+__xsubi
+[3])
+
+598 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+601 extern void 
+	$srand48
+ (long int 
+__seedval
+) 
+__THROW
+;
+
+602 extern unsigned short int *
+	$seed48
+ (unsigned short int 
+__seed16v
+[3])
+
+603 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+604 extern void 
+	$lcong48
+ (unsigned short int 
+__param
+[7]) 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+606 #ifdef 
+__USE_MISC
+
+
+610 struct 
+	sdrand48_data
+
+
+612 unsigned short int 
+__x
+[3];
+
+613 unsigned short int 
+__old_x
+[3];
+
+614 unsigned short int 
+__c
+;
+
+615 unsigned short int 
+__init
+;
+
+616 
+__extension__
+ unsigned long long int 
+__a
+;
+
+621 extern int 
+	$drand48_r
+ (struct 
+drand48_data
+ *
+__restrict
+ 
+__buffer
+,
+
+622 double *
+__restrict
+ 
+__result
+) 
+__THROW
+ 
+	`__nonnull
+ ((1, 2));
+
+623 extern int 
+	$erand48_r
+ (unsigned short int 
+__xsubi
+[3],
+
+624 struct 
+drand48_data
+ *
+__restrict
+ 
+__buffer
+,
+
+625 double *
+__restrict
+ 
+__result
+) 
+__THROW
+ 
+	`__nonnull
+ ((1, 2));
+
+628 extern int 
+	$lrand48_r
+ (struct 
+drand48_data
+ *
+__restrict
+ 
+__buffer
+,
+
+629 long int *
+__restrict
+ 
+__result
+)
+
+630 
+__THROW
+ 
+	`__nonnull
+ ((1, 2));
+
+631 extern int 
+	$nrand48_r
+ (unsigned short int 
+__xsubi
+[3],
+
+632 struct 
+drand48_data
+ *
+__restrict
+ 
+__buffer
+,
+
+633 long int *
+__restrict
+ 
+__result
+)
+
+634 
+__THROW
+ 
+	`__nonnull
+ ((1, 2));
+
+637 extern int 
+	$mrand48_r
+ (struct 
+drand48_data
+ *
+__restrict
+ 
+__buffer
+,
+
+638 long int *
+__restrict
+ 
+__result
+)
+
+639 
+__THROW
+ 
+	`__nonnull
+ ((1, 2));
+
+640 extern int 
+	$jrand48_r
+ (unsigned short int 
+__xsubi
+[3],
+
+641 struct 
+drand48_data
+ *
+__restrict
+ 
+__buffer
+,
+
+642 long int *
+__restrict
+ 
+__result
+)
+
+643 
+__THROW
+ 
+	`__nonnull
+ ((1, 2));
+
+646 extern int 
+	$srand48_r
+ (long int 
+__seedval
+, struct 
+drand48_data
+ *
+__buffer
+)
+
+647 
+__THROW
+ 
+	`__nonnull
+ ((2));
+
+649 extern int 
+	$seed48_r
+ (unsigned short int 
+__seed16v
+[3],
+
+650 struct 
+drand48_data
+ *
+__buffer
+) 
+__THROW
+ 
+	`__nonnull
+ ((1, 2));
+
+652 extern int 
+	$lcong48_r
+ (unsigned short int 
+__param
+[7],
+
+653 struct 
+drand48_data
+ *
+__buffer
+)
+
+654 
+__THROW
+ 
+	`__nonnull
+ ((1, 2));
+
+657 extern 
+__uint32_t
+ 
+	$arc4random
+ (void)
+
+658 
+__THROW
+ 
+__wur
+;
+
+661 extern void 
+	$arc4random_buf
+ (void *
+__buf
+, 
+size_t
+ 
+__size
+)
+
+662 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+666 extern 
+__uint32_t
+ 
+	$arc4random_uniform
+ (
+__uint32_t
+ 
+__upper_bound
+)
+
+667 
+__THROW
+ 
+__wur
+;
+
+672 extern void *
+	$malloc
+ (
+size_t
+ 
+__size
+) 
+__THROW
+ 
+__attribute_malloc__
+
+
+673 
+	`__attribute_alloc_size__
+ ((1)) 
+__wur
+;
+
+675 extern void *
+	$calloc
+ (
+size_t
+ 
+__nmemb
+, size_t 
+__size
+)
+
+676 
+__THROW
+ 
+__attribute_malloc__
+ 
+	`__attribute_alloc_size__
+ ((1, 2)) 
+__wur
+;
+
+683 extern void *
+	$realloc
+ (void *
+__ptr
+, 
+size_t
+ 
+__size
+)
+
+684 
+__THROW
+ 
+__attribute_warn_unused_result__
+ 
+	`__attribute_alloc_size__
+ ((2));
+
+687 extern void 
+	$free
+ (void *
+__ptr
+) 
+__THROW
+;
+
+689 #ifdef 
+__USE_MISC
+
+
+695 extern void *
+	$reallocarray
+ (void *
+__ptr
+, 
+size_t
+ 
+__nmemb
+, size_t 
+__size
+)
+
+696 
+__THROW
+ 
+__attribute_warn_unused_result__
+
+
+697 
+	`__attribute_alloc_size__
+ ((2, 3))
+
+698 
+__attr_dealloc_free
+;
+
+701 extern void *
+	$reallocarray
+ (void *
+__ptr
+, 
+size_t
+ 
+__nmemb
+, size_t 
+__size
+)
+
+702 
+__THROW
+ 
+	`__attr_dealloc
+ (
+reallocarray
+, 1);
+
+705 #ifdef 
+__USE_MISC
+
+
+706 #include 
+	~<alloca.h
+>
+
+709 #if (
+defined
+ 
+__USE_XOPEN_EXTENDED
+ && !defined 
+__USE_XOPEN2K
+) \
+
+710 || 
+defined
+ 
+__USE_MISC
+
+
+712 extern void *
+	$valloc
+ (
+size_t
+ 
+__size
+) 
+__THROW
+ 
+__attribute_malloc__
+
+
+713 
+	`__attribute_alloc_size__
+ ((1)) 
+__wur
+;
+
+716 #ifdef 
+__USE_XOPEN2K
+
+
+718 extern int 
+	$posix_memalign
+ (void **
+__memptr
+, 
+size_t
+ 
+__alignment
+, size_t 
+__size
+)
+
+719 
+__THROW
+ 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+722 #ifdef 
+__USE_ISOC11
+
+
+724 extern void *
+	$aligned_alloc
+ (
+size_t
+ 
+__alignment
+, size_t 
+__size
+)
+
+725 
+__THROW
+ 
+__attribute_malloc__
+ 
+	`__attribute_alloc_align__
+ ((1))
+
+726 
+	`__attribute_alloc_size__
+ ((2)) 
+__wur
+;
+
+730 extern void 
+	$abort
+ (void) 
+__THROW
+ 
+	`__attribute__
+ ((
+__noreturn__
+));
+
+734 extern int 
+	$atexit
+ (void (*
+__func
+) (void)) 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+736 #if 
+defined
+ 
+__USE_ISOC11
+ || defined 
+__USE_ISOCXX11
+
+
+738 #ifdef 
+__cplusplus
+
+
+739 extern "C++" int 
+	$at_quick_exit
+ (void (*
+__func
+) (void))
+
+740 
+__THROW
+ 
+	`__asm
+ ("at_quick_exit") 
+	`__nonnull
+ ((1));
+
+742 extern int 
+	$at_quick_exit
+ (void (*
+__func
+) (void)) 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+746 #ifdef 
+__USE_MISC
+
+
+749 extern int 
+	$on_exit
+ (void (*
+__func
+) (int 
+__status
+, void *
+__arg
+), void *__arg)
+
+750 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+756 extern void 
+	$exit
+ (int 
+__status
+) 
+__THROW
+ 
+	`__attribute__
+ ((
+__noreturn__
+));
+
+758 #if 
+defined
+ 
+__USE_ISOC11
+ || defined 
+__USE_ISOCXX11
+
+
+762 extern void 
+	$quick_exit
+ (int 
+__status
+) 
+__THROW
+ 
+	`__attribute__
+ ((
+__noreturn__
+));
+
+765 #ifdef 
+__USE_ISOC99
+
+
+768 extern void 
+	$_Exit
+ (int 
+__status
+) 
+__THROW
+ 
+	`__attribute__
+ ((
+__noreturn__
+));
+
+773 extern char *
+	$getenv
+ (const char *
+__name
+) 
+__THROW
+ 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+775 #ifdef 
+__USE_GNU
+
+
+778 extern char *
+	$secure_getenv
+ (const char *
+__name
+)
+
+779 
+__THROW
+ 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+782 #if 
+defined
+ 
+__USE_MISC
+ || defined 
+__USE_XOPEN
+
+
+786 extern int 
+	$putenv
+ (char *
+__string
+) 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+789 #ifdef 
+__USE_XOPEN2K
+
+
+792 extern int 
+	$setenv
+ (const char *
+__name
+, const char *
+__value
+, int 
+__replace
+)
+
+793 
+__THROW
+ 
+	`__nonnull
+ ((2));
+
+796 extern int 
+	$unsetenv
+ (const char *
+__name
+) 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+799 #ifdef 
+__USE_MISC
+
+
+803 extern int 
+	$clearenv
+ (void) 
+__THROW
+;
+
+807 #if 
+defined
+ 
+__USE_MISC
+ \
+
+808 || (
+defined
+ 
+__USE_XOPEN_EXTENDED
+ && !defined 
+__USE_XOPEN2K8
+)
+
+814 extern char *
+	$mktemp
+ (char *
+__template
+) 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+817 #if 
+defined
+ 
+__USE_XOPEN_EXTENDED
+ || defined 
+__USE_XOPEN2K8
+
+
+826 #ifndef 
+__USE_FILE_OFFSET64
+
+
+827 extern int 
+	$mkstemp
+ (char *
+__template
+) 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+829 #ifdef 
+__REDIRECT
+
+
+830 extern int 
+	`__REDIRECT
+ (
+mkstemp
+, (char *
+__template
+), 
+mkstemp64
+)
+
+831 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+833 #define 
+	#mkstemp
+ 
+mkstemp64
+
+
+	)
+
+836 #ifdef 
+__USE_LARGEFILE64
+
+
+837 extern int 
+	$mkstemp64
+ (char *
+__template
+) 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+841 #ifdef 
+__USE_MISC
+
+
+848 #ifndef 
+__USE_FILE_OFFSET64
+
+
+849 extern int 
+	$mkstemps
+ (char *
+__template
+, int 
+__suffixlen
+) 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+851 #ifdef 
+__REDIRECT
+
+
+852 extern int 
+	`__REDIRECT
+ (
+mkstemps
+, (char *
+__template
+, int 
+__suffixlen
+),
+
+853 
+mkstemps64
+) 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+855 #define 
+	#mkstemps
+ 
+mkstemps64
+
+
+	)
+
+858 #ifdef 
+__USE_LARGEFILE64
+
+
+859 extern int 
+	$mkstemps64
+ (char *
+__template
+, int 
+__suffixlen
+)
+
+860 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+864 #ifdef 
+__USE_XOPEN2K8
+
+
+870 extern char *
+	$mkdtemp
+ (char *
+__template
+) 
+__THROW
+ 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+873 #ifdef 
+__USE_GNU
+
+
+880 #ifndef 
+__USE_FILE_OFFSET64
+
+
+881 extern int 
+	$mkostemp
+ (char *
+__template
+, int 
+__flags
+) 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+883 #ifdef 
+__REDIRECT
+
+
+884 extern int 
+	`__REDIRECT
+ (
+mkostemp
+, (char *
+__template
+, int 
+__flags
+), 
+mkostemp64
+)
+
+885 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+887 #define 
+	#mkostemp
+ 
+mkostemp64
+
+
+	)
+
+890 #ifdef 
+__USE_LARGEFILE64
+
+
+891 extern int 
+	$mkostemp64
+ (char *
+__template
+, int 
+__flags
+) 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+900 #ifndef 
+__USE_FILE_OFFSET64
+
+
+901 extern int 
+	$mkostemps
+ (char *
+__template
+, int 
+__suffixlen
+, int 
+__flags
+)
+
+902 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+904 #ifdef 
+__REDIRECT
+
+
+905 extern int 
+	`__REDIRECT
+ (
+mkostemps
+, (char *
+__template
+, int 
+__suffixlen
+,
+
+906 int 
+__flags
+), 
+mkostemps64
+)
+
+907 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+909 #define 
+	#mkostemps
+ 
+mkostemps64
+
+
+	)
+
+912 #ifdef 
+__USE_LARGEFILE64
+
+
+913 extern int 
+	$mkostemps64
+ (char *
+__template
+, int 
+__suffixlen
+, int 
+__flags
+)
+
+914 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+923 extern int 
+	$system
+ (const char *
+__command
+) 
+__wur
+;
+
+926 #ifdef 
+__USE_GNU
+
+
+929 extern char *
+	$canonicalize_file_name
+ (const char *
+__name
+)
+
+930 
+__THROW
+ 
+	`__nonnull
+ ((1)) 
+__attribute_malloc__
+
+
+931 
+__attr_dealloc_free
+ 
+__wur
+;
+
+934 #if 
+defined
+ 
+__USE_MISC
+ || defined 
+__USE_XOPEN_EXTENDED
+
+
+940 extern char *
+	$realpath
+ (const char *
+__restrict
+ 
+__name
+,
+
+941 char *
+__restrict
+ 
+__resolved
+) 
+__THROW
+ 
+__wur
+;
+
+946 #ifndef 
+__COMPAR_FN_T
+
+
+947 #define 
+	#__COMPAR_FN_T
+
+
+	)
+
+948 typedef int (*
+	t__compar_fn_t
+) (const void *, const void *);
+
+950 #ifdef 
+__USE_GNU
+
+
+951 typedef 
+__compar_fn_t
+ 
+	tcomparison_fn_t
+;
+
+954 #ifdef 
+__USE_GNU
+
+
+955 typedef int (*
+	t__compar_d_fn_t
+) (const void *, const void *, void *);
+
+960 extern void *
+	$bsearch
+ (const void *
+__key
+, const void *
+__base
+,
+
+961 
+size_t
+ 
+__nmemb
+, size_t 
+__size
+, 
+__compar_fn_t
+ 
+__compar
+)
+
+962 
+	`__nonnull
+ ((1, 2, 5)) 
+__wur
+;
+
+964 #ifdef 
+__USE_EXTERN_INLINES
+
+
+965 #include 
+	~<bits/stdlib-bsearch.h
+>
+
+970 extern void 
+	$qsort
+ (void *
+__base
+, 
+size_t
+ 
+__nmemb
+, size_t 
+__size
+,
+
+971 
+__compar_fn_t
+ 
+__compar
+) 
+	`__nonnull
+ ((1, 4));
+
+972 #ifdef 
+__USE_GNU
+
+
+973 extern void 
+	$qsort_r
+ (void *
+__base
+, 
+size_t
+ 
+__nmemb
+, size_t 
+__size
+,
+
+974 
+__compar_d_fn_t
+ 
+__compar
+, void *
+__arg
+)
+
+975 
+	`__nonnull
+ ((1, 4));
+
+980 extern int 
+	$abs
+ (int 
+__x
+) 
+__THROW
+ 
+	`__attribute__
+ ((
+__const__
+)) 
+__wur
+;
+
+981 extern long int 
+	$labs
+ (long int 
+__x
+) 
+__THROW
+ 
+	`__attribute__
+ ((
+__const__
+)) 
+__wur
+;
+
+983 #ifdef 
+__USE_ISOC99
+
+
+984 
+__extension__
+ extern long long int 
+	$llabs
+ (long long int 
+__x
+)
+
+985 
+__THROW
+ 
+	`__attribute__
+ ((
+__const__
+)) 
+__wur
+;
+
+992 extern 
+div_t
+ 
+	$div
+ (int 
+__numer
+, int 
+__denom
+)
+
+993 
+__THROW
+ 
+	`__attribute__
+ ((
+__const__
+)) 
+__wur
+;
+
+994 extern 
+ldiv_t
+ 
+	$ldiv
+ (long int 
+__numer
+, long int 
+__denom
+)
+
+995 
+__THROW
+ 
+	`__attribute__
+ ((
+__const__
+)) 
+__wur
+;
+
+997 #ifdef 
+__USE_ISOC99
+
+
+998 
+__extension__
+ extern 
+lldiv_t
+ 
+	$lldiv
+ (long long int 
+__numer
+,
+
+999 long long int 
+__denom
+)
+
+1000 
+__THROW
+ 
+	`__attribute__
+ ((
+__const__
+)) 
+__wur
+;
+
+1004 #if (
+defined
+ 
+__USE_XOPEN_EXTENDED
+ && !defined 
+__USE_XOPEN2K8
+) \
+
+1005 || 
+defined
+ 
+__USE_MISC
+
+
+1012 extern char *
+	$ecvt
+ (double 
+__value
+, int 
+__ndigit
+, int *
+__restrict
+ 
+__decpt
+,
+
+1013 int *
+__restrict
+ 
+__sign
+) 
+__THROW
+ 
+	`__nonnull
+ ((3, 4)) 
+__wur
+;
+
+1018 extern char *
+	$fcvt
+ (double 
+__value
+, int 
+__ndigit
+, int *
+__restrict
+ 
+__decpt
+,
+
+1019 int *
+__restrict
+ 
+__sign
+) 
+__THROW
+ 
+	`__nonnull
+ ((3, 4)) 
+__wur
+;
+
+1024 extern char *
+	$gcvt
+ (double 
+__value
+, int 
+__ndigit
+, char *
+__buf
+)
+
+1025 
+__THROW
+ 
+	`__nonnull
+ ((3)) 
+__wur
+;
+
+1028 #ifdef 
+__USE_MISC
+
+
+1030 extern char *
+	$qecvt
+ (long double 
+__value
+, int 
+__ndigit
+,
+
+1031 int *
+__restrict
+ 
+__decpt
+, int *__restrict 
+__sign
+)
+
+1032 
+__THROW
+ 
+	`__nonnull
+ ((3, 4)) 
+__wur
+;
+
+1033 extern char *
+	$qfcvt
+ (long double 
+__value
+, int 
+__ndigit
+,
+
+1034 int *
+__restrict
+ 
+__decpt
+, int *__restrict 
+__sign
+)
+
+1035 
+__THROW
+ 
+	`__nonnull
+ ((3, 4)) 
+__wur
+;
+
+1036 extern char *
+	$qgcvt
+ (long double 
+__value
+, int 
+__ndigit
+, char *
+__buf
+)
+
+1037 
+__THROW
+ 
+	`__nonnull
+ ((3)) 
+__wur
+;
+
+1042 extern int 
+	$ecvt_r
+ (double 
+__value
+, int 
+__ndigit
+, int *
+__restrict
+ 
+__decpt
+,
+
+1043 int *
+__restrict
+ 
+__sign
+, char *__restrict 
+__buf
+,
+
+1044 
+size_t
+ 
+__len
+) 
+__THROW
+ 
+	`__nonnull
+ ((3, 4, 5));
+
+1045 extern int 
+	$fcvt_r
+ (double 
+__value
+, int 
+__ndigit
+, int *
+__restrict
+ 
+__decpt
+,
+
+1046 int *
+__restrict
+ 
+__sign
+, char *__restrict 
+__buf
+,
+
+1047 
+size_t
+ 
+__len
+) 
+__THROW
+ 
+	`__nonnull
+ ((3, 4, 5));
+
+1049 extern int 
+	$qecvt_r
+ (long double 
+__value
+, int 
+__ndigit
+,
+
+1050 int *
+__restrict
+ 
+__decpt
+, int *__restrict 
+__sign
+,
+
+1051 char *
+__restrict
+ 
+__buf
+, 
+size_t
+ 
+__len
+)
+
+1052 
+__THROW
+ 
+	`__nonnull
+ ((3, 4, 5));
+
+1053 extern int 
+	$qfcvt_r
+ (long double 
+__value
+, int 
+__ndigit
+,
+
+1054 int *
+__restrict
+ 
+__decpt
+, int *__restrict 
+__sign
+,
+
+1055 char *
+__restrict
+ 
+__buf
+, 
+size_t
+ 
+__len
+)
+
+1056 
+__THROW
+ 
+	`__nonnull
+ ((3, 4, 5));
+
+1062 extern int 
+	$mblen
+ (const char *
+__s
+, 
+size_t
+ 
+__n
+) 
+__THROW
+;
+
+1065 extern int 
+	$mbtowc
+ (
+wchar_t
+ *
+__restrict
+ 
+__pwc
+,
+
+1066 const char *
+__restrict
+ 
+__s
+, 
+size_t
+ 
+__n
+) 
+__THROW
+;
+
+1069 extern int 
+	$wctomb
+ (char *
+__s
+, 
+wchar_t
+ 
+__wchar
+) 
+__THROW
+;
+
+1073 extern 
+size_t
+ 
+	$mbstowcs
+ (
+wchar_t
+ *
+__restrict
+ 
+__pwcs
+,
+
+1074 const char *
+__restrict
+ 
+__s
+, 
+size_t
+ 
+__n
+) 
+__THROW
+
+
+1075 
+	`__attr_access
+ ((
+__read_only__
+, 2));
+
+1077 extern 
+size_t
+ 
+	$wcstombs
+ (char *
+__restrict
+ 
+__s
+,
+
+1078 const 
+wchar_t
+ *
+__restrict
+ 
+__pwcs
+, 
+size_t
+ 
+__n
+)
+
+1079 
+__THROW
+
+
+1080 
+	$__fortified_attr_access
+ (
+__write_only__
+, 1, 3)
+
+1081 
+	`__attr_access
+ ((
+__read_only__
+, 2));
+
+1083 #ifdef 
+__USE_MISC
+
+
+1088 extern int 
+	$rpmatch
+ (const char *
+__response
+) 
+__THROW
+ 
+	`__nonnull
+ ((1)) 
+__wur
+;
+
+1092 #if 
+defined
+ 
+__USE_XOPEN_EXTENDED
+ || defined 
+__USE_XOPEN2K8
+
+
+1099 extern int 
+	$getsubopt
+ (char **
+__restrict
+ 
+__optionp
+,
+
+1100 char *const *
+__restrict
+ 
+__tokens
+,
+
+1101 char **
+__restrict
+ 
+__valuep
+)
+
+1102 
+__THROW
+ 
+	`__nonnull
+ ((1, 2, 3)) 
+__wur
+;
+
+1108 #ifdef 
+__USE_XOPEN2KXSI
+
+
+1110 extern int 
+	$posix_openpt
+ (int 
+__oflag
+) 
+__wur
+;
+
+1113 #ifdef 
+__USE_XOPEN_EXTENDED
+
+
+1118 extern int 
+	$grantpt
+ (int 
+__fd
+) 
+__THROW
+;
+
+1122 extern int 
+	$unlockpt
+ (int 
+__fd
+) 
+__THROW
+;
+
+1127 extern char *
+	$ptsname
+ (int 
+__fd
+) 
+__THROW
+ 
+__wur
+;
+
+1130 #ifdef 
+__USE_GNU
+
+
+1134 extern int 
+	$ptsname_r
+ (int 
+__fd
+, char *
+__buf
+, 
+size_t
+ 
+__buflen
+)
+
+1135 
+__THROW
+ 
+	`__nonnull
+ ((2)) 
+	`__fortified_attr_access
+ (
+__write_only__
+, 2, 3);
+
+1138 extern int 
+	`getpt
+ (void);
+
+1141 #ifdef 
+__USE_MISC
+
+
+1145 extern int 
+	$getloadavg
+ (double 
+__loadavg
+[], int 
+__nelem
+)
+
+1146 
+__THROW
+ 
+	`__nonnull
+ ((1));
+
+1149 #if 
+defined
+ 
+__USE_XOPEN_EXTENDED
+ && !defined 
+__USE_XOPEN2K
+
+
+1152 extern int 
+	$ttyslot
+ (void) 
+__THROW
+;
+
+1155 #include 
+	~<bits/stdlib-float.h
+>
+
+1158 #if 
+__USE_FORTIFY_LEVEL
+ > 0 && 
+defined
+ 
+__fortify_function
+
+
+1159 #include 
+	~<bits/stdlib.h
+>
+
+1162 #include 
+	~<bits/floatn.h
+>
+
+1163 #if 
+defined
+ 
+__LDBL_COMPAT
+ || 
+__LDOUBLE_REDIRECTS_TO_FLOAT128_ABI
+ == 1
+
+1164 #include 
+	~<bits/stdlib-ldbl.h
+>
+
+1167 
+__END_DECLS
+
+
+	@/usr/include/alloca.h
+
+18 #ifndef 
+_ALLOCA_H
+
+
+19 #define 
+	#_ALLOCA_H
+ 1
+
+	)
+
+21 #include 
+	~<features.h
+>
+
+23 #define 
+	#__need_size_t
+
+
+	)
+
+24 #include 
+	~<stddef.h
+>
+
+26 
+	g__BEGIN_DECLS
+
+
+29 #undef 
+alloca
+
+
+32 extern void *
+	$alloca
+ (
+size_t
+ 
+__size
+) 
+__THROW
+;
+
+34 #ifdef 
+__GNUC__
+
+
+35 #define 
+	#alloca
+(
+size
+) 
+	`__builtin_alloca
+ (size)
+
+	)
+
+38 
+__END_DECLS
+
+
+	@/usr/include/features.h
+
+18 #ifndef 
+_FEATURES_H
+
+
+19 #define 
+	#_FEATURES_H
+ 1
+
+	)
+
+127 #undef 
+__USE_ISOC11
+
+
+128 #undef 
+__USE_ISOC99
+
+
+129 #undef 
+__USE_ISOC95
+
+
+130 #undef 
+__USE_ISOCXX11
+
+
+131 #undef 
+__USE_POSIX
+
+
+132 #undef 
+__USE_POSIX2
+
+
+133 #undef 
+__USE_POSIX199309
+
+
+134 #undef 
+__USE_POSIX199506
+
+
+135 #undef 
+__USE_XOPEN
+
+
+136 #undef 
+__USE_XOPEN_EXTENDED
+
+
+137 #undef 
+__USE_UNIX98
+
+
+138 #undef 
+__USE_XOPEN2K
+
+
+139 #undef 
+__USE_XOPEN2KXSI
+
+
+140 #undef 
+__USE_XOPEN2K8
+
+
+141 #undef 
+__USE_XOPEN2K8XSI
+
+
+142 #undef 
+__USE_LARGEFILE
+
+
+143 #undef 
+__USE_LARGEFILE64
+
+
+144 #undef 
+__USE_FILE_OFFSET64
+
+
+145 #undef 
+__USE_MISC
+
+
+146 #undef 
+__USE_ATFILE
+
+
+147 #undef 
+__USE_DYNAMIC_STACK_SIZE
+
+
+148 #undef 
+__USE_GNU
+
+
+149 #undef 
+__USE_FORTIFY_LEVEL
+
+
+150 #undef 
+__KERNEL_STRICT_NAMES
+
+
+151 #undef 
+__GLIBC_USE_ISOC2X
+
+
+152 #undef 
+__GLIBC_USE_DEPRECATED_GETS
+
+
+153 #undef 
+__GLIBC_USE_DEPRECATED_SCANF
+
+
+154 #undef 
+__GLIBC_USE_C2X_STRTOL
+
+
+158 #ifndef 
+_LOOSE_KERNEL_NAMES
+
+
+159 #define 
+	#__KERNEL_STRICT_NAMES
+
+
+	)
+
+169 #if 
+defined
+ 
+__GNUC__
+ && defined 
+__GNUC_MINOR__
+
+
+170 #define 
+	#__GNUC_PREREQ
+(
+maj
+, 
+min
+) \
+
+171 ((
+__GNUC__
+ << 16) + 
+__GNUC_MINOR__
+ >= ((
+maj
+) << 16) + (
+min
+))
+
+	)
+
+173 #define 
+	#__GNUC_PREREQ
+(
+maj
+, 
+min
+) 0
+
+	)
+
+180 #if 
+defined
+ 
+__clang_major__
+ && defined 
+__clang_minor__
+
+
+181 #define 
+	#__glibc_clang_prereq
+(
+maj
+, 
+min
+) \
+
+182 ((
+__clang_major__
+ << 16) + 
+__clang_minor__
+ >= ((
+maj
+) << 16) + (
+min
+))
+
+	)
+
+184 #define 
+	#__glibc_clang_prereq
+(
+maj
+, 
+min
+) 0
+
+	)
+
+188 #define 
+	#__GLIBC_USE
+(
+F
+) 
+__GLIBC_USE_
+ ## 
+	)
+F
+
+194 #if (
+defined
+ 
+_BSD_SOURCE
+ || defined 
+_SVID_SOURCE
+) \
+
+195 && !
+defined
+ 
+	g_DEFAULT_SOURCE
+
+
+197 #undef 
+_DEFAULT_SOURCE
+
+
+198 #define 
+	#_DEFAULT_SOURCE
+ 1
+
+	)
+
+202 #ifdef 
+_GNU_SOURCE
+
+
+203 #undef 
+_ISOC95_SOURCE
+
+
+204 #define 
+	#_ISOC95_SOURCE
+ 1
+
+	)
+
+205 #undef 
+_ISOC99_SOURCE
+
+
+206 #define 
+	#_ISOC99_SOURCE
+ 1
+
+	)
+
+207 #undef 
+_ISOC11_SOURCE
+
+
+208 #define 
+	#_ISOC11_SOURCE
+ 1
+
+	)
+
+209 #undef 
+_ISOC2X_SOURCE
+
+
+210 #define 
+	#_ISOC2X_SOURCE
+ 1
+
+	)
+
+211 #undef 
+_POSIX_SOURCE
+
+
+212 #define 
+	#_POSIX_SOURCE
+ 1
+
+	)
+
+213 #undef 
+_POSIX_C_SOURCE
+
+
+214 #define 
+	#_POSIX_C_SOURCE
+ 200809L
+
+	)
+
+215 #undef 
+_XOPEN_SOURCE
+
+
+216 #define 
+	#_XOPEN_SOURCE
+ 700
+
+	)
+
+217 #undef 
+_XOPEN_SOURCE_EXTENDED
+
+
+218 #define 
+	#_XOPEN_SOURCE_EXTENDED
+ 1
+
+	)
+
+219 #undef 
+_LARGEFILE64_SOURCE
+
+
+220 #define 
+	#_LARGEFILE64_SOURCE
+ 1
+
+	)
+
+221 #undef 
+_DEFAULT_SOURCE
+
+
+222 #define 
+	#_DEFAULT_SOURCE
+ 1
+
+	)
+
+223 #undef 
+_ATFILE_SOURCE
+
+
+224 #define 
+	#_ATFILE_SOURCE
+ 1
+
+	)
+
+225 #undef 
+_DYNAMIC_STACK_SIZE_SOURCE
+
+
+226 #define 
+	#_DYNAMIC_STACK_SIZE_SOURCE
+ 1
+
+	)
+
+231 #if (
+defined
+ 
+_DEFAULT_SOURCE
+ \
+
+232 || (!
+defined
+ 
+	g__STRICT_ANSI__
+ \
+
+233 && !
+defined
+ 
+	g_ISOC99_SOURCE
+ && !defined 
+	g_ISOC11_SOURCE
+ \
+
+234 && !
+defined
+ 
+	g_ISOC2X_SOURCE
+ \
+
+235 && !
+defined
+ 
+	g_POSIX_SOURCE
+ && !defined 
+	g_POSIX_C_SOURCE
+ \
+
+236 && !
+defined
+ 
+	g_XOPEN_SOURCE
+))
+
+237 #undef 
+_DEFAULT_SOURCE
+
+
+238 #define 
+	#_DEFAULT_SOURCE
+ 1
+
+	)
+
+242 #if (
+defined
+ 
+_ISOC2X_SOURCE
+ \
+
+243 || (
+defined
+ 
+	g__STDC_VERSION__
+ && __STDC_VERSION__ > 201710L))
+
+244 #define 
+	#__GLIBC_USE_ISOC2X
+ 1
+
+	)
+
+246 #define 
+	#__GLIBC_USE_ISOC2X
+ 0
+
+	)
+
+250 #if (
+defined
+ 
+_ISOC11_SOURCE
+ || defined 
+_ISOC2X_SOURCE
+ \
+
+251 || (
+defined
+ 
+	g__STDC_VERSION__
+ && __STDC_VERSION__ >= 201112L))
+
+252 #define 
+	#__USE_ISOC11
+ 1
+
+	)
+
+256 #if (
+defined
+ 
+_ISOC99_SOURCE
+ || defined 
+_ISOC11_SOURCE
+ \
+
+257 || 
+defined
+ 
+_ISOC2X_SOURCE
+ \
+
+258 || (
+defined
+ 
+__STDC_VERSION__
+ && __STDC_VERSION__ >= 199901L))
+
+259 #define 
+	#__USE_ISOC99
+ 1
+
+	)
+
+263 #if (
+defined
+ 
+_ISOC99_SOURCE
+ || defined 
+_ISOC11_SOURCE
+ \
+
+264 || 
+defined
+ 
+_ISOC2X_SOURCE
+ \
+
+265 || (
+defined
+ 
+__STDC_VERSION__
+ && __STDC_VERSION__ >= 199409L))
+
+266 #define 
+	#__USE_ISOC95
+ 1
+
+	)
+
+269 #ifdef 
+__cplusplus
+
+
+271 #if 
+__cplusplus
+ >= 201703L
+
+272 #define 
+	#__USE_ISOC11
+ 1
+
+	)
+
+276 #if 
+__cplusplus
+ >= 201103L || 
+defined
+ 
+__GXX_EXPERIMENTAL_CXX0X__
+
+
+277 #define 
+	#__USE_ISOCXX11
+ 1
+
+	)
+
+278 #define 
+	#__USE_ISOC99
+ 1
+
+	)
+
+285 #ifdef 
+_DEFAULT_SOURCE
+
+
+286 #if !
+defined
+ 
+_POSIX_SOURCE
+ && !defined 
+_POSIX_C_SOURCE
+
+
+287 #define 
+	#__USE_POSIX_IMPLICITLY
+ 1
+
+	)
+
+289 #undef 
+_POSIX_SOURCE
+
+
+290 #define 
+	#_POSIX_SOURCE
+ 1
+
+	)
+
+291 #undef 
+_POSIX_C_SOURCE
+
+
+292 #define 
+	#_POSIX_C_SOURCE
+ 200809L
+
+	)
+
+295 #if ((!
+defined
+ 
+__STRICT_ANSI__
+ \
+
+296 || (
+defined
+ 
+_XOPEN_SOURCE
+ && (_XOPEN_SOURCE - 0) >= 500)) \
+
+297 && !
+defined
+ 
+_POSIX_SOURCE
+ && !defined 
+_POSIX_C_SOURCE
+)
+
+298 #define 
+	#_POSIX_SOURCE
+ 1
+
+	)
+
+299 #if 
+defined
+ 
+_XOPEN_SOURCE
+ && (_XOPEN_SOURCE - 0) < 500
+
+300 #define 
+	#_POSIX_C_SOURCE
+ 2
+
+	)
+
+301 #elif 
+defined
+ 
+_XOPEN_SOURCE
+ && (_XOPEN_SOURCE - 0) < 600
+
+302 #define 
+	#_POSIX_C_SOURCE
+ 199506L
+
+	)
+
+303 #elif 
+defined
+ 
+_XOPEN_SOURCE
+ && (_XOPEN_SOURCE - 0) < 700
+
+304 #define 
+	#_POSIX_C_SOURCE
+ 200112L
+
+	)
+
+306 #define 
+	#_POSIX_C_SOURCE
+ 200809L
+
+	)
+
+308 #define 
+	#__USE_POSIX_IMPLICITLY
+ 1
+
+	)
+
+317 #if ((!
+defined
+ 
+_POSIX_C_SOURCE
+ || (_POSIX_C_SOURCE - 0) < 199506L) \
+
+318 && (
+defined
+ 
+_REENTRANT
+ || defined 
+_THREAD_SAFE
+))
+
+319 #define 
+	#_POSIX_SOURCE
+ 1
+
+	)
+
+320 #undef 
+_POSIX_C_SOURCE
+
+
+321 #define 
+	#_POSIX_C_SOURCE
+ 199506L
+
+	)
+
+324 #if (
+defined
+ 
+_POSIX_SOURCE
+ \
+
+325 || (
+defined
+ 
+_POSIX_C_SOURCE
+ && _POSIX_C_SOURCE >= 1) \
+
+326 || 
+defined
+ 
+_XOPEN_SOURCE
+)
+
+327 #define 
+	#__USE_POSIX
+ 1
+
+	)
+
+330 #if 
+defined
+ 
+_POSIX_C_SOURCE
+ && _POSIX_C_SOURCE >= 2 || defined 
+_XOPEN_SOURCE
+
+
+331 #define 
+	#__USE_POSIX2
+ 1
+
+	)
+
+334 #if 
+defined
+ 
+_POSIX_C_SOURCE
+ && (_POSIX_C_SOURCE - 0) >= 199309L
+
+335 #define 
+	#__USE_POSIX199309
+ 1
+
+	)
+
+338 #if 
+defined
+ 
+_POSIX_C_SOURCE
+ && (_POSIX_C_SOURCE - 0) >= 199506L
+
+339 #define 
+	#__USE_POSIX199506
+ 1
+
+	)
+
+342 #if 
+defined
+ 
+_POSIX_C_SOURCE
+ && (_POSIX_C_SOURCE - 0) >= 200112L
+
+343 #define 
+	#__USE_XOPEN2K
+ 1
+
+	)
+
+344 #undef 
+__USE_ISOC95
+
+
+345 #define 
+	#__USE_ISOC95
+ 1
+
+	)
+
+346 #undef 
+__USE_ISOC99
+
+
+347 #define 
+	#__USE_ISOC99
+ 1
+
+	)
+
+350 #if 
+defined
+ 
+_POSIX_C_SOURCE
+ && (_POSIX_C_SOURCE - 0) >= 200809L
+
+351 #define 
+	#__USE_XOPEN2K8
+ 1
+
+	)
+
+352 #undef 
+_ATFILE_SOURCE
+
+
+353 #define 
+	#_ATFILE_SOURCE
+ 1
+
+	)
+
+356 #ifdef 
+_XOPEN_SOURCE
+
+
+357 #define 
+	#__USE_XOPEN
+ 1
+
+	)
+
+358 #if (
+_XOPEN_SOURCE
+ - 0) >= 500
+
+359 #define 
+	#__USE_XOPEN_EXTENDED
+ 1
+
+	)
+
+360 #define 
+	#__USE_UNIX98
+ 1
+
+	)
+
+361 #undef 
+_LARGEFILE_SOURCE
+
+
+362 #define 
+	#_LARGEFILE_SOURCE
+ 1
+
+	)
+
+363 #if (
+_XOPEN_SOURCE
+ - 0) >= 600
+
+364 #if (
+_XOPEN_SOURCE
+ - 0) >= 700
+
+365 #define 
+	#__USE_XOPEN2K8
+ 1
+
+	)
+
+366 #define 
+	#__USE_XOPEN2K8XSI
+ 1
+
+	)
+
+368 #define 
+	#__USE_XOPEN2K
+ 1
+
+	)
+
+369 #define 
+	#__USE_XOPEN2KXSI
+ 1
+
+	)
+
+370 #undef 
+__USE_ISOC95
+
+
+371 #define 
+	#__USE_ISOC95
+ 1
+
+	)
+
+372 #undef 
+__USE_ISOC99
+
+
+373 #define 
+	#__USE_ISOC99
+ 1
+
+	)
+
+376 #ifdef 
+_XOPEN_SOURCE_EXTENDED
+
+
+377 #define 
+	#__USE_XOPEN_EXTENDED
+ 1
+
+	)
+
+382 #ifdef 
+_LARGEFILE_SOURCE
+
+
+383 #define 
+	#__USE_LARGEFILE
+ 1
+
+	)
+
+386 #ifdef 
+_LARGEFILE64_SOURCE
+
+
+387 #define 
+	#__USE_LARGEFILE64
+ 1
+
+	)
+
+390 #if 
+defined
+ 
+_FILE_OFFSET_BITS
+ && _FILE_OFFSET_BITS == 64
+
+391 #define 
+	#__USE_FILE_OFFSET64
+ 1
+
+	)
+
+394 #include 
+	~<features-time64.h
+>
+
+396 #if 
+defined
+ 
+_DEFAULT_SOURCE
+
+
+397 #define 
+	#__USE_MISC
+ 1
+
+	)
+
+400 #ifdef 
+_ATFILE_SOURCE
+
+
+401 #define 
+	#__USE_ATFILE
+ 1
+
+	)
+
+404 #ifdef 
+_DYNAMIC_STACK_SIZE_SOURCE
+
+
+405 #define 
+	#__USE_DYNAMIC_STACK_SIZE
+ 1
+
+	)
+
+408 #ifdef 
+_GNU_SOURCE
+
+
+409 #define 
+	#__USE_GNU
+ 1
+
+	)
+
+412 #if 
+defined
+ 
+_FORTIFY_SOURCE
+ && _FORTIFY_SOURCE > 0 \
+
+413 && 
+defined
+ 
+__OPTIMIZE__
+ && __OPTIMIZE__ > 0
+
+414 #if !
+__GNUC_PREREQ
+ (4, 1)
+
+415 #warning 
+_FORTIFY_SOURCE
+ 
+requires
+ 
+GCC
+ 4.1 
+or
+ 
+later
+
+
+416 #elif 
+_FORTIFY_SOURCE
+ > 2 && (
+__glibc_clang_prereq
+ (9, 0) \
+
+417 || 
+	$__GNUC_PREREQ
+ (12, 0))
+
+419 #if 
+_FORTIFY_SOURCE
+ > 3
+
+420 #warning 
+_FORTIFY_SOURCE
+ > 3 
+is
+ 
+treated
+ 
+like
+ 3 
+on
+ 
+this
+ 
+platform
+
+
+422 #define 
+	#__USE_FORTIFY_LEVEL
+ 3
+
+	)
+
+423 #elif 
+_FORTIFY_SOURCE
+ > 1
+
+424 #if 
+_FORTIFY_SOURCE
+ > 2
+
+425 #warning 
+_FORTIFY_SOURCE
+ > 2 
+is
+ 
+treated
+ 
+like
+ 2 
+on
+ 
+this
+ 
+platform
+
+
+427 #define 
+	#__USE_FORTIFY_LEVEL
+ 2
+
+	)
+
+429 #define 
+	#__USE_FORTIFY_LEVEL
+ 1
+
+	)
+
+432 #ifndef 
+__USE_FORTIFY_LEVEL
+
+
+433 #define 
+	#__USE_FORTIFY_LEVEL
+ 0
+
+	)
+
+440 #if 
+defined
+ 
+__cplusplus
+ ? __cplusplus >= 201402L : defined 
+__USE_ISOC11
+
+
+441 #define 
+	#__GLIBC_USE_DEPRECATED_GETS
+ 0
+
+	)
+
+443 #define 
+	#__GLIBC_USE_DEPRECATED_GETS
+ 1
+
+	)
+
+458 #if (
+defined
+ 
+__USE_GNU
+ \
+
+459 && (
+defined
+ 
+__cplusplus
+ \
+
+460 ? (
+__cplusplus
+ < 201103L && !
+defined
+ 
+__GXX_EXPERIMENTAL_CXX0X__
+) \
+
+461 : (!
+defined
+ 
+__STDC_VERSION__
+ || __STDC_VERSION__ < 199901L)))
+
+462 #define 
+	#__GLIBC_USE_DEPRECATED_SCANF
+ 1
+
+	)
+
+464 #define 
+	#__GLIBC_USE_DEPRECATED_SCANF
+ 0
+
+	)
+
+472 #if 
+	`__GLIBC_USE
+ (
+ISOC2X
+)
+
+473 #define 
+	#__GLIBC_USE_C2X_STRTOL
+ 1
+
+	)
+
+475 #define 
+	#__GLIBC_USE_C2X_STRTOL
+ 0
+
+	)
+
+480 #include 
+	~<stdc-predef.h
+>
+
+488 #undef 
+__GNU_LIBRARY__
+
+
+489 #define 
+	#__GNU_LIBRARY__
+ 6
+
+	)
+
+493 #define 
+	#__GLIBC__
+ 2
+
+	)
+
+494 #define 
+	#__GLIBC_MINOR__
+ 39
+
+	)
+
+496 #define 
+	#__GLIBC_PREREQ
+(
+maj
+, 
+min
+) \
+
+497 ((
+__GLIBC__
+ << 16) + 
+__GLIBC_MINOR__
+ >= ((
+maj
+) << 16) + (
+min
+))
+
+	)
+
+500 #ifndef 
+__ASSEMBLER__
+
+
+501 #ifndef 
+_SYS_CDEFS_H
+
+
+502 #include 
+	~<sys/cdefs.h
+>
+
+507 #if 
+defined
+ 
+__USE_FILE_OFFSET64
+ && !defined 
+__REDIRECT
+
+
+508 #define 
+	#__USE_LARGEFILE
+ 1
+
+	)
+
+509 #define 
+	#__USE_LARGEFILE64
+ 1
+
+	)
+
+515 #if 
+	`__GNUC_PREREQ
+ (2, 7) && 
+defined
+ 
+__OPTIMIZE__
+ \
+
+516 && !
+defined
+ 
+__OPTIMIZE_SIZE__
+ && !defined 
+__NO_INLINE__
+ \
+
+517 && 
+defined
+ 
+__extern_inline
+
+
+518 #define 
+	#__USE_EXTERN_INLINES
+ 1
+
+	)
+
+526 #include 
+	~<gnu/stubs.h
+>
+
+	@/usr/include/features-time64.h
+
+20 #include 
+	~<bits/wordsize.h
+>
+
+21 #include 
+	~<bits/timesize.h
+>
+
+23 #if 
+defined
+ 
+_TIME_BITS
+
+
+24 #if 
+_TIME_BITS
+ == 64
+
+25 #if ! 
+defined
+ (
+_FILE_OFFSET_BITS
+) || _FILE_OFFSET_BITS != 64
+
+27 #elif 
+__TIMESIZE
+ == 32
+
+28 #define 
+	#__USE_TIME_BITS64
+ 1
+
+	)
+
+30 #elif 
+_TIME_BITS
+ == 32
+
+31 #if 
+__TIMESIZE
+ > 32
+
+35 #error 
+Invalid
+ 
+_TIME_BITS
+ 
+value
+ (
+can
+ 
+only
+ 
+be
+ 32 
+or
+ 64-
+bit
+)
+
+	@/usr/include/stdc-predef.h
+
+18 #ifndef 
+_STDC_PREDEF_H
+
+
+19 #define 
+	#_STDC_PREDEF_H
+ 1
+
+	)
+
+36 #ifdef 
+__GCC_IEC_559
+
+
+37 #if 
+__GCC_IEC_559
+ > 0
+
+38 #define 
+	#__STDC_IEC_559__
+ 1
+
+	)
+
+39 #define 
+	#__STDC_IEC_60559_BFP__
+ 201404L
+
+	)
+
+42 #define 
+	#__STDC_IEC_559__
+ 1
+
+	)
+
+43 #define 
+	#__STDC_IEC_60559_BFP__
+ 201404L
+
+	)
+
+46 #ifdef 
+__GCC_IEC_559_COMPLEX
+
+
+47 #if 
+__GCC_IEC_559_COMPLEX
+ > 0
+
+48 #define 
+	#__STDC_IEC_559_COMPLEX__
+ 1
+
+	)
+
+49 #define 
+	#__STDC_IEC_60559_COMPLEX__
+ 201404L
+
+	)
+
+52 #define 
+	#__STDC_IEC_559_COMPLEX__
+ 1
+
+	)
+
+53 #define 
+	#__STDC_IEC_60559_COMPLEX__
+ 201404L
+
+	)
+
+62 #define 
+	#__STDC_ISO_10646__
+ 201706L
+
+	)
+
+	@
+1
+.
+1
+/usr/include
+6
+138
+example.cpp
+/usr/include/stdlib.h
+/usr/include/alloca.h
+/usr/include/features.h
+/usr/include/features-time64.h
+/usr/include/stdc-predef.h

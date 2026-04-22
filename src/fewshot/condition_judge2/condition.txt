@@ -1,0 +1,4 @@
+{
+    "target": "execution enters else branch"
+    "descirption": When calling "get_ptr(20, pointer)" in example.cpp:38, execution enters else branch in example.cpp:29, so pointer remains null when reaching example:39:"pointer[0] = 'a';" in function "main()"
+}

@@ -69,17 +69,19 @@ Then we try to analyze the code and give conditions for confirming the correctne
 
 def get_examples_for_condition_analysis():
 
-    with open("src/fewshot/condition_judge1/example.cpp", "r") as f:
-        src_code = f.read()
-    f.close()
-    with open("src/fewshot/condition_judge1/condition.txt", "r") as f:
-        condition = f.read()
-    f.close()
-    with open("src/fewshot/condition_judge1/analysis.txt", "r") as f:
-        analysis = f.read()
-    f.close()
+    def get_one_example(idx):
 
-    return f"""\
+        with open(f"src/fewshot/condition_judge{idx}/example.cpp", "r") as f:
+            src_code = f.read()
+        f.close()
+        with open(f"src/fewshot/condition_judge{idx}/condition.txt", "r") as f:
+            condition = f.read()
+        f.close()
+        with open(f"src/fewshot/condition_judge{idx}/analysis.txt", "r") as f:
+            analysis = f.read()
+        f.close()
+
+        return f"""\
 ---------- The example ----------
 This is an example for condition analysis and judgment:
 
@@ -95,3 +97,5 @@ Analysis:
 {analysis}
 ---------- End of the example ----------
 """
+    
+    return get_one_example(1) + get_one_example(2)
