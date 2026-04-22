@@ -1,4 +1,4 @@
 "1": {
   "target": "return value of "func1",
-  "description": "When calling src/example.cpp:4:"func1" with "num"=1 in example.cpp:31:"int* ptr = func1(num);", the return value is null"
+  "description": "There exists some call of function "func2" defined at src/example.cpp where func1(num) returns a null pointer"
 }

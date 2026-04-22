@@ -37,51 +37,42 @@ When using "get_information_of_project" to search for definitions or calls, reme
 
 Something you need to pay attention to when generating conditions:
 (1) Try to keep the number of conditions less than 5 for each warning. For easy warnings, 1 or 2 conditions are enough.
-(2) For warnings that happen in one certain execution path(e.g. double free, use after free), everything you need to confirm should be write in one condition. Otherwise, if you break it into multiple conditions, they may not be judged correctly.
+(2) For warnings that happen in one certain execution path, everything you need to confirm should be write in one condition. Otherwise, if you break it into multiple conditions, they may not be judged correctly.
 (3) Only focus on the warning given. If you find other bugs in the code, ignore them. Make sure the conditions you generate match the warning information(file, line, variable...) strictly.
 (4) Do not output the conclusion even if you think the warning is easy to judge. Only give conditions. For example, conditions like "(If)..., the warning is true/false positive" are not allowed.
-Something you need to pay attention to when inspecting the source code:
-(1) Some warnings seem to occur in one function, but they can be caused by repeated calls of the function. You should take this into consideration.
-(2) Functions can have multiple possible return values. When analyzing a function call, you cannot assume that all of them will be returned. Instead, you should analyze reachability based on the specific arguments and the function's code structure to determine the actual return value.
+
 --------------------
 When generating conditions, you must strictly follow the steps below:
 (1) Get examples from tool "get_example".
-(2) Get the function corresponding to the warning with the tool "view_one_function". Most static analysis tool will provide file and line.
-(3) Get callers and calls of this function by using tool "get_information_of_project" with "option" set to 6 and 8 and inspect them. You need to determine the specific argument values passed to the function. Some warnings are related with these calls, and you should inspect the callers in this case. If analyzing only the function's caller is insufficient, you can analyze higher-level callers recursively.
-(4) Carefully inspect the function corresponding to the warning. If necessary, inspect its callers:
-  (4.1) Analyze everything related with the warning in this function, including variable and parameter values, function return values, pointer alias, control flow, path reachability, etc.
-  (4.2) For functions, macros related with the warning inside this function, use tool "get_information_of_project" to search for them. Do not assume them to be some value. For functions, you need to determine its actual return value based on arguments and do not assume that the return value can be all possible return values of the function.
-  (4.3) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
-(5) Then you can continue obtaining information and analyzing source code in your way.
+(2) Get the function corresponding to the warning with the tool "view_one_function". 
+(3) Carefully inspect this function:
+  (3.1) Find the direct cause of the warning, as well as other related code(not necessarily in the same function). For common types of warnings, the code you need to find and inspect is as follows(but is not limited to):
+    Null pointer dereference: 1.The dereference  2.The last assignment to the pointer(or its alias)
+    Buffer overflow: 1.The offset that cause the overflow  2.The definition of the buffer
+    Use after free(Double free): 1.The use of the pointer  2.the possible frees before the use 
+    Uninitialized variable: 1.The use of the variable  2.The possible definitions and assignment of the variable
+    Memory leak: 1.All operations of the pointer(its alias) pointing to the memory
+    Divided by zero: 1.The division expression  2.The assignment to the divisor 
+  (3.2) Information like variable/function values, pointer alias, path reachability may be needed while analyzing. You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc.
+  (3.3) After finding the location of these operations, you don't need to do comprehensive analysis. You can leave the work to the condition judger. 
+(4) If you need more information, try using the tool "get_information_of_project".
+(5) Then you can continue analyzing in your own way.
 --------------------
 You should combine the analysis process, the intermediate results, the warning information and the confirmation conditions in JSON format and output it. For each condition in "Confirmation conditions", target means what to confirm and description means the detail. You need to give a brief summary of your reasoning process in "Explanation".
 Please note that the JSON format must be("```json" and "```" are necessary in your answer):
 ```json
 {
   "Files": [...],
-  "Analyzing process":[
-    {
-      "function": "...",
-      "analysis":
-        {
-          "function1": "...", 
-          "variable1": "...", 
-          "pointer1": "...", 
-          ...
-          "overall analysis": "..."
-        }
-    },
-    ......
-    {
-      "condition generation analysis":{
-        "reminder": "All conditions should not depend on each others"
-        "step1": "...", 
-        "step2": "...", 
-        ...
-        "overall analysis": "..."
+  "Analyzing process":{
+    "function": "...",
+    "analysis":{
+      "variables": "...", 
+      "pointers": "...", 
+      "path reachability": "...",
+      ...
+      "overall analysis": "..."
       }
-    }
-  ],
+  },
   "Warning information":
   {
     "File name": ,
@@ -115,25 +106,32 @@ def create_condition_analyzer(tools:list):
       system_prompt = '''\
 You are cooperating with others to determine whether warnings on a C/C++ project provided by a static analysis tool is true positive or false positive. 
 You will be given a condition in the form of a statement. Your job is to determine whether the condition aligns with the C/C++ program. In each condition, "target" means what to confirm and "description" means the detail, and you should read both of them carefully.
+
 You can use the following function tools to help you:
 (1) list_files(path:str)                  
 (2) view_one_file(file_path:str, start_line:int = 1, end_line:int = 0)
 (3) get_information_of_project(option: int, target: str, filtered_by_path: str = "")
 (4) view_one_function(file_path: str, line: int)
 When using "get_information_of_project" to search for definitions or calls, remember to set "filtered_by_path" to a high directory or "", otherwise, you may miss some information.
+
 If you are sure that the condition is true, output T and give an explanation to prove it. For example, if the condition is "Exist an execution path ...", you should give the path.
 If you are sure that the condition is false, output F and give an explanation to prove it. For example, if the condition is "The two pointers point to the same memory", you should find evidence that they point to different memory.
 If you are not sure about the condition, feel free to output Unknown and give your reasons and what you need to judge it.
+
+Something you need to pay attention to when inspecting the source code:
+(1) Some warnings seem to occur in one function, but they can be caused by repeated calls of the function. You should take this into consideration.
+(2) Functions can have multiple possible return values. When analyzing a function call, you cannot assume that all of them will be returned. Instead, you should analyze reachability based on the specific arguments and the function's code structure to determine the actual return value.
 Something you need to pay attention to when giving results:
 (1) Some conditions may be in the following form: (If)..., the warning is false positive. If you think the condition is true, meaning the warning is false positive, output result F.
+
 --------------------
 When judging conditions, you must strictly follow the steps below:
 (1) Get the function corresponding to the condition with the tool "view_one_function".
-(2) Carefully inspect this function:
-  (2.1) Analyze everything related with the condition in this function, including variable and parameter values, function return values, pointer alias, control flow, path reachability, etc.
-  (2.2) For variables, functions, macros related with the condition inside this function, use tool "get_information_of_project" to search for them. Do not assume them to be some value. For functions, you need to determine its actual return value based on arguments and do not assume that the return value can be all possible return values of the function.
-  (2.3) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
-(3) If some information(e.g. the parameters) can only be found in the callers, use "get_information_of_project" to get callers and calls recursively until you get the exact values by setting "option" to 6 and 8. Do not assume the variables you don't know to be any value. 
+(2) Get the callers, calls of the function, function calls, macros, global variables, etc recursively until you are certain about everything(e.g. parameters) in this function. Do not assume them to be some values, but get exact information.
+(3) Carefully inspect these functions:
+  (3.1) Analyze everything related with the condition, including variable and parameter values, function return values, pointer alias, control flow, path reachability, etc.
+  (3.2) For variables, functions, macros related with the condition inside this function, use tool "get_information_of_project" to search for them. Do not assume them to be some value. For functions, you need to determine its actual return value based on arguments and do not assume that the return value can be all possible return values of the function.
+  (3.3) You can use the following methods to help you analyze: drawing a control flow graph, listing a variable value table and a pointer alias table, etc
 (4) Then you can continue obtaining information and analyzing source code in your way.
 --------------------
 You should output the results, the analyzing process and intermediate results in JSON format("```json" and "```" are necessary):
@@ -147,9 +145,10 @@ You should output the results, the analyzing process and intermediate results in
       "function": "...",
       "analysis":
         {
-          "function1": "...", 
-          "variable1": "...", 
-          "pointer1": "...", 
+          "functions": "...", 
+          "variables": "...", 
+          "pointer alias": "...",
+          "path reachability": "...", 
           ...
           "overall analysis": "..."
         }

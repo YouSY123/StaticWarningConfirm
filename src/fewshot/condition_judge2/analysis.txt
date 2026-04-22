@@ -1,14 +1,4 @@
-First we examine "get_ptr" and "main" mentioned in the condition.
-
-tool call: view_one_function(file_path="example.cpp", line=38)
-return:
-    35 | int main()
-    36 | {
-    37 |     char* pointer = nullptr;
-    38 |     get_ptr(20, pointer);
-    39 |     pointer[0] = 'a';
-    40 |     return 0;
-    41 | }
+First we examine "get_ptr" mentioned in the condition.
 
 tool call: view_one_function(file_path="example.cpp", line=29)
 return:
@@ -28,6 +18,18 @@ return:
     32 |     }
     33 | }
     34 |
+
+Then we inspect its callers.
+
+tool call: view_one_function(file_path="example.cpp", line=38)
+return:
+    35 | int main()
+    36 | {
+    37 |     char* pointer = nullptr;
+    38 |     get_ptr(20, pointer);
+    39 |     pointer[0] = 'a';
+    40 |     return 0;
+    41 | }
 
 Execution reaches else branch in line 29 if var1<=0, and var1 equals the return value of function "foo(20)". So we need to examine function "foo".
 

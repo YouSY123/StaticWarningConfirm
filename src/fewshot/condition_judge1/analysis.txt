@@ -21,6 +21,8 @@ return:
     39 | }
     40 | 
 
+The we get function "func1".
+
 tool call: view_one_function(file_path="src/example.cpp", line=4)
 return:
      4 | int* func1(int num)
@@ -43,8 +45,38 @@ return:
     21 | }
     22 | 
 
-When calling "func1" with num=1, "num<=0" in line 10 is false so that line 10: "return ret_p;" is not reachable. After executing "int* ret_p = nullptr;", the "else" branch at line 12 will be entered. In the else branch, "ret_p" is allocated memory, so ret_p != null. Then ret_p is returned. 
-In conclusion, the return value of the function is not null.
+The information is still insufficient because the return value of func1(num) is determined by num. So we need to inspect the callers and calls of func2 to get the value of num.
+
+tool call: get_information_of_project(option=6, target="func2", filtered_by_path="")
+return:
+main    example.cpp:41  int main()
+
+tool call: get_information_of_project(option=8, target="func2", filtered_by_path="")
+return:
+func2   example.cpp:44  func2(1, value1);
+func2   example.cpp:47  func2(0, value2);
+
+Then we need to inspect function main to find out the possible value of num(value1, value2).
+tool call: view_one_function(file_path="src/example.cpp", line=41)
+return:
+    41 | int main()
+    42 | {
+    43 |     int value1 = (1 + 2) / 2;
+    44 |     func2(1, value1); 
+    45 | 
+    46 |     int value2 = value1 - 2;
+    47 |     func2(0, value2);
+    48 | }
+
+value1 = 1, value2 = -1;
+
+The call of func2:
+1. func2(1, 1);
+2. func2(0, -1);
+
+for 2: execution reaches if-branch in line 25, and func1(num) is not executed.
+for 1: execute func1(1), execution reaches else-branch in func1 in line 12. In this else-branch ret_p is allocated memory successfully and returned. The return value is not null.
+
 
 ```json
 {"result": "F", "explanation": "..."}

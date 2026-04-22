@@ -1,4 +1,0 @@
-example.cpp:20:1: warning: Potential leak of memory pointed to by 'p' [unix.Malloc]
-   20 | }
-      | ^
-1 warning generated.

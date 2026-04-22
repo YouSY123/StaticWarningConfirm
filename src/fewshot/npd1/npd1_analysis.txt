@@ -1,11 +1,17 @@
-First we find where the pointer "p" is declared:
-20    Node *p = maybe_get(a);
-Then we inspect the function "maybe_get" to see if it can return NULL:
-    if (flag > 0) {
-    ...
+First we inspect the function:
+int foo(int a, int b) {
+    Node *p = maybe_get(a);
+    if (b < 0) {
+        return -1;
     }
-    return NULL;
-That means "p" can be NULL. So the warning is correct iff "p" is assigned to NULL in line 20 and then passed to line 25.
+    else{
+        return p->value + b;
+    }
+}
+
+Dereference: return p->value + b;
+Alias of "p": []
+Last assignment to "p": Node *p = maybe_get(a);
 
 ```json
 {
@@ -14,15 +20,14 @@ That means "p" can be NULL. So the warning is correct iff "p" is assigned to NUL
   ],
   "Warning information":
   {
-    "1":
-    {
-      "File name": ["code.c"],
-      "Type": "null pointer dereference",
-      "Variable name": "p",
-      "Line number": [25],
-      "Confirmation conditions": {
-        "1": "When assigning 'p' in code.c:20:'Node *p = maybe_get(a);', the function return NULL, so that 'p' is assigned to NULL", 
-        "2": "When executing code.c:25:'return p->value + b;', the pointer 'p' equals 'p' in code.c:20:'Node *p = maybe_get(a);'"
+    "File name": ["code.c"],
+    "Type": "null pointer dereference",
+    "Variable name": "p",
+    "Line number": [25],
+    "Confirmation conditions": {
+      "1": {
+        "target": "return value of "maybe_get(a)" and the else-branch is entered",
+        "description": "There exists one call of function "foo" defined at code.c:19, maybe_get(a) at code.cpp:20 return a null pointer and the else-branch at code.c:24 is entered."
       }
     }
   }

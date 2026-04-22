@@ -1,3 +1,3 @@
-code.cpp:21:21: error: Null pointer dereference: n[idx] [nullPointer]
-    printf("%d\n", n[idx]->x);
-                    ^
+code.cpp:19:12: error: Null pointer dereference
+    return p[0];
+           ^

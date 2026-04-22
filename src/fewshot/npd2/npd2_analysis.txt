@@ -1,29 +1,45 @@
-First we find the assignment of n[]:
-25    init(5);
-In function init(), some elements of n[] may be assigned to NULL.
+First we inspect the function:
+int foo(){
 
-We inspect the code execution paths:
-main() -> line27: for loop -> line30: call print_node -> line21: dereference n[idx]
+    int size = 0;
+    int* p;
+
+    if(size != 0){
+        p=(int*)malloc(size*sizeof(int));
+    }
+    else{
+        p=get_ptr();
+    }
+
+    return p[0];
+}
+
+Dereference:  return p[0]; at code.c:19
+Alias: []
+Last assigment: p=(int*)malloc(size*sizeof(int)); or p=get_ptr();
+
+We can see that size=0 so that if-branch at code.c:12 cannot be entered and else-branch is always entered.
+As a result: Last assigment can only be p=get_ptr();
 
 ```json
 {
   "Files": [
-    "code.cpp"
+    "code.c"
   ],
   "Warning information":
   {
-    "1":
-    {
-      "File name": ["code.cpp"],
-      "Type": "null pointer dereference",
-      "Variable name": "n[idx]",
-      "Line number": [21],
-      "Confirmation conditions": {
-        "1": "
-            In some execution path:
-            (a) code.cpp:25:'init(5);' will assign some elements of n[] to NULL.
-            (b) in some for loop in code.cpp:27, the function call code.cpp:30:'print_node(a, b);' will execute code.cpp:21:'return n[idx]->value;' and it dereferences the NULL elements in n[].
-            "
+    "File name": ["code.c"],
+    "Type": "null pointer dereference",
+    "Variable name": "p",
+    "Line number": [19],
+    "Confirmation conditions": {
+      "1": {
+        "target": "Return value of "get_ptr()"",
+        "description": "The function "get_ptr" called at code.c:16 may return a null pointer"
+      }
+      "2": {
+        "target": "No null check",
+        "description": "Between the end of the if structure at code.c:17 and code.c:19:return p[0];, there is no null check"
       }
     }
   }
