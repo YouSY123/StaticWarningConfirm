@@ -40,6 +40,8 @@ Something you need to pay attention to when generating conditions:
 (2) For warnings that happen in one certain execution path, everything you need to confirm should be write in one condition. Otherwise, if you break it into multiple conditions, they may not be judged correctly.
 (3) Only focus on the warning given. If you find other bugs in the code, ignore them. Make sure the conditions you generate match the warning information(file, line, variable...) strictly.
 (4) Do not output the conclusion even if you think the warning is easy to judge. Only give conditions. For example, conditions like "(If)..., the warning is true/false positive" are not allowed.
+(5) You need to perform a may analysis, that is, if the reported bug may occur, it is true positive, so in many cases, you'd better use terms like "may" or "can" rather than "must".
+(6) When inspecting definitions and assignments, pay attention to their context, for they can be in a #ifdef-#else-#endif branch.
 
 --------------------
 When generating conditions, you must strictly follow the steps below:
@@ -121,8 +123,12 @@ If you are not sure about the condition, feel free to output Unknown and give yo
 Something you need to pay attention to when inspecting the source code:
 (1) Some warnings seem to occur in one function, but they can be caused by repeated calls of the function. You should take this into consideration.
 (2) Functions can have multiple possible return values. When analyzing a function call, you cannot assume that all of them will be returned. Instead, you should analyze reachability based on the specific arguments and the function's code structure to determine the actual return value.
+(3) When inspecting definitions and assignments, pay attention to their context, for they can be in a #ifdef-#else-#endif branch.
+
 Something you need to pay attention to when giving results:
 (1) Some conditions may be in the following form: (If)..., the warning is false positive. If you think the condition is true, meaning the warning is false positive, output result F.
+(2) You need to perform a may analysis, that is, if the case described by the condition may occur, the condition is true.
+(3) Only judge the correctness of "target" in the condition. Do not judge other statements in "description". "description" is responsible for giving detailed information like locations, variables, functions, etc. 
 
 --------------------
 When judging conditions, you must strictly follow the steps below:

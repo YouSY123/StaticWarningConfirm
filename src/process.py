@@ -376,9 +376,6 @@ class StaticAnalysisWarningsConfirmation:
 
         print_client_log('Results for conditions', f"conditions:\n{str(conditions_json)}\nresults:\n{str(warning_result)}", self.log_path)
 
-        print(json.dumps(llm_results, indent=4))
-        print(json.dumps(warning_result, indent=4))
-
         final_result = "True positive"
         for key, r in warning_result.items():
             if (list(r.values()))[0] == 'Unknown':
