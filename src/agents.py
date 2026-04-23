@@ -40,8 +40,20 @@ Something you need to pay attention to when generating conditions:
 (2) For warnings that happen in one certain execution path, everything you need to confirm should be write in one condition. Otherwise, if you break it into multiple conditions, they may not be judged correctly.
 (3) Only focus on the warning given. If you find other bugs in the code, ignore them. Make sure the conditions you generate match the warning information(file, line, variable...) strictly.
 (4) Do not output the conclusion even if you think the warning is easy to judge. Only give conditions. For example, conditions like "(If)..., the warning is true/false positive" are not allowed.
-(5) You need to perform a may analysis, that is, if the reported bug may occur, it is true positive, so in many cases, you'd better use terms like "may" or "can" rather than "must".
-(6) When inspecting definitions and assignments, pay attention to their context, for they can be in a #ifdef-#else-#endif branch.
+(5) When inspecting definitions and assignments, pay attention to their context, for they can be in a #ifdef-#else-#endif branch.
+
+********************
+Important: 
+You should perform a may analysis, that is, if the bug may occur in some case, the warning is true positive.
+When generating conditions, you'd better use terms like "may" or "can" rather than "must" unless necessary.
+For example:
+Null pointer dereference at
+```cpp
+Node* a = maybe_null(b);
+a -> value = 1;
+```
+The appropriate condition is "maybe_null(b) may return null". Using "must" here will cause a wrong result.
+********************
 
 --------------------
 When generating conditions, you must strictly follow the steps below:
@@ -127,8 +139,12 @@ Something you need to pay attention to when inspecting the source code:
 
 Something you need to pay attention to when giving results:
 (1) Some conditions may be in the following form: (If)..., the warning is false positive. If you think the condition is true, meaning the warning is false positive, output result F.
-(2) You need to perform a may analysis, that is, if the case described by the condition may occur, the condition is true.
-(3) Only judge the correctness of "target" in the condition. Do not judge other statements in "description". "description" is responsible for giving detailed information like locations, variables, functions, etc. 
+(2) Only judge the correctness of "target" in the condition. Do not judge other statements in "description". "description" is responsible for giving detailed information like locations, variables, functions, etc. 
+
+********************
+Important:
+You should perform a may analysis, that is, if the statement in the condition may occur in some case, the condition is true.
+********************
 
 --------------------
 When judging conditions, you must strictly follow the steps below:
