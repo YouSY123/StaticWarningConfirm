@@ -29,7 +29,7 @@ def confirm(
     )
 
     result = asyncio.run(confirmator.start())
-    return result[0]
+    return result
 
 # confirm a list of warnings in a project, with database builded only once
 def confirm_project(
@@ -39,7 +39,8 @@ def confirm_project(
     result_path_list: list[str], 
     database_path: str, 
     statistics_path: str, 
-    project_name: str
+    project_name: str, 
+    warning_name_list: list[str]
 ):
     
     build_result = build_codequery_db(
@@ -67,11 +68,10 @@ def confirm_project(
         )
 
         result = asyncio.run(confirmator.start())
-        result = result[0]
         result_list.append(result)
 
         time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        statistic_information = f"[{project_name}] Warning{idx}: {result} [Time: {time}]\n"
+        statistic_information = f"[{project_name}] {warning_name_list[idx]}: {result} [Time: {time}]\n"
 
         with open(statistics_path, "a") as f:
             f.write(statistic_information)
