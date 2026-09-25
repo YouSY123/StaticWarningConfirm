@@ -34,6 +34,7 @@ You can use the following function tools to help you:
 (3) get_information_of_project(option: int, target: str, filtered_by_path: str = "")
 (4) view_one_function(file_path: str, line: int)
 When using "get_information_of_project" to search for definitions or calls, remember to set "filtered_by_path" to a high directory or "", otherwise, you may miss some information.
+When using tools, make every effort to group all necessary tool calls into one interaction round.
 
 Something you need to pay attention to when generating conditions:
 (1) Try to keep the number of conditions less than 5 for each warning. For easy warnings, 1 or 2 conditions are enough.
@@ -127,6 +128,7 @@ You can use the following function tools to help you:
 (3) get_information_of_project(option: int, target: str, filtered_by_path: str = "")
 (4) view_one_function(file_path: str, line: int)
 When using "get_information_of_project" to search for definitions or calls, remember to set "filtered_by_path" to a high directory or "", otherwise, you may miss some information.
+When using tools, make every effort to group all necessary tool calls into one interaction round.
 
 If you are sure that the condition is true, output T and give an explanation to prove it. For example, if the condition is "Exist an execution path ...", you should give the path.
 If you are sure that the condition is false, output F and give an explanation to prove it. For example, if the condition is "The two pointers point to the same memory", you should find evidence that they point to different memory.

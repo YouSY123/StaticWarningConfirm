@@ -24,7 +24,7 @@ def get_example(type: str) -> str:
     elif type == "null-pointer-dereference":
         return get_example_base("npd1", "null-pointer-dereference") + "\n\n" + get_example_base("npd2", "null-pointer-dereference")
     elif type == "memory-leak":
-        return get_example_base("ml1", "memory-leak") + "\n\n" + get_example_base("ml2", "memory-leak")
+        return get_example_base("ml1", "memory-leak")
     elif type == "divided-by-zero":
         return get_example_base("dbz1", "divided-by-zero")
     elif type == "uninitialized-variable":

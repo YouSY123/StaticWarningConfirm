@@ -5,6 +5,8 @@ from copy import deepcopy
 from codequery_tools import get_information_of_project
 from tools import init_tools, list_files, view_one_file, view_one_function
 from fewshot import get_examples_for_condition_analysis
+from datetime import datetime
+import os
 
 
 from config import PRINT_LOG
@@ -24,12 +26,12 @@ def write_result(content:str, result_path:str):
 
 class StaticAnalysisWarningsConfirmation:
 
-    def __init__(self, root_dir, static_analysis_result, log_path, result_path, database_path):
+    def __init__(self, root_dir, static_analysis_result, res_path, database_path):
 
         self.root_dir = root_dir
         self.sar = static_analysis_result
-        self.log_path = log_path
-        self.result_path = result_path
+        self.log_path = os.path.join(res_path, "log.txt")
+        self.result_path = os.path.join(res_path, "result.txt")
 
         # initialize tools
         init_tools(root_dir, database_path)
@@ -65,6 +67,8 @@ class StaticAnalysisWarningsConfirmation:
         generate_pass = False
         checker_info = ""
 
+        tokens = {"input_tokens": 0, "output_tokens": 0}
+
         for turn in range(CONDITION_GENERATE_MAX_TURN):
 
             # generate conditions
@@ -86,6 +90,9 @@ class StaticAnalysisWarningsConfirmation:
                 if hasattr(message, "content"):
                     if str(message.content) != "":
                         dialogue += (str((message.content)).replace("\n", "\\n") + "\n\n")
+                if hasattr(message, "usage_metadata"):
+                    tokens["input_tokens"] += message.usage_metadata["input_tokens"]
+                    tokens["output_tokens"] += message.usage_metadata["output_tokens"]
                 if hasattr(message, "tool_calls"):
                     if message.tool_calls != []:
                         dialogue += (str(message.tool_calls) + "\n\n")
@@ -102,6 +109,10 @@ class StaticAnalysisWarningsConfirmation:
                     {"messages": [{"role": "user", "content": checker_prompt}]},
                     {"recursion_limit": 100}
                 )
+
+                result_tokens = checker_result["messages"][-1].usage_metadata
+                tokens["input_tokens"] += result_tokens["input_tokens"]
+                tokens["output_tokens"] += result_tokens["output_tokens"]
 
             except Exception as e:
                 continue
@@ -131,18 +142,18 @@ class StaticAnalysisWarningsConfirmation:
             try:
 
                 conditions = self.extract_json(str(result["messages"][-1].content))
-                write_result(f"Conditions:\n{json.dumps(conditions, indent=4)}", self.result_path)
+                write_result(f"Conditions:\n{json.dumps(conditions, indent=4)}\n\nTokens:\n{json.dumps(tokens, indent=4)}\n", self.result_path)
                 
             except Exception as e:
 
-                write_result("Failed to extract conditions as JSON.\n", self.result_path)
-                return {"result": "failed"}
+                write_result("Failed to extract conditions as JSON.\n\nTokens:\n{json.dumps(tokens, indent=4)}\n", self.result_path)
+                return {"result": "failed"}, tokens
 
-            return conditions
+            return conditions, tokens
         
         else:
-            write_result(f"Failed to generate conditions in {CONDITION_GENERATE_MAX_TURN} times.\n", self.result_path)
-            return {"result": "failed"}
+            write_result(f"Failed to generate conditions in {CONDITION_GENERATE_MAX_TURN} times.\n\nTokens:\n{json.dumps(tokens, indent=4)}\n", self.result_path)
+            return {"result": "failed"}, tokens
     
 
     def extract_json(self, string_info:str):
@@ -169,6 +180,8 @@ class StaticAnalysisWarningsConfirmation:
         from config import CONDITION_VOTE_TIMES, CONDITION_JUDGE_MAX_TURN
 
         judge_cnt = 0
+
+        tokens = {"input_tokens": 0, "output_tokens": 0}
 
         async def judge_one_time():
 
@@ -201,6 +214,9 @@ class StaticAnalysisWarningsConfirmation:
                     if hasattr(message, "content"):
                         if str(message.content) != "":
                             dialogue += (str((message.content)).replace("\n", "\\n") + "\n\n")
+                    if hasattr(message, "usage_metadata"):
+                        tokens["input_tokens"] += message.usage_metadata["input_tokens"]
+                        tokens["output_tokens"] += message.usage_metadata["output_tokens"]
                     if hasattr(message, "tool_calls"):
                         if message.tool_calls != []:
                             dialogue += (str(message.tool_calls) + "\n\n")
@@ -221,6 +237,10 @@ class StaticAnalysisWarningsConfirmation:
                         {"messages": [{"role": "user", "content": checker_prompt}]},
                         {"recursion_limit": 100}
                     )
+
+                    result_tokens = checker_result["messages"][-1].usage_metadata
+                    tokens["input_tokens"] += result_tokens["input_tokens"]
+                    tokens["output_tokens"] += result_tokens["output_tokens"]
 
                 except Exception as e:
                     result = {"result": "None", "explanation": ""}
@@ -277,7 +297,7 @@ class StaticAnalysisWarningsConfirmation:
                     "T reasons": true_reasons,
                     "F reasons": false_reasons,
                     "Unknown reasons": unknown_reasons
-                }
+                }, tokens
             elif false_cnt > max(true_cnt, unknown_cnt):
                 return {
                     f'result for condition {index}': 'F',
@@ -287,7 +307,7 @@ class StaticAnalysisWarningsConfirmation:
                     "T reasons": true_reasons,
                     "F reasons": false_reasons,
                     "Unknown reasons": unknown_reasons
-                }
+                }, tokens
             elif unknown_cnt > max(true_cnt, false_cnt):
                 return {
                     f'result for condition {index}': 'Unknown',
@@ -297,7 +317,7 @@ class StaticAnalysisWarningsConfirmation:
                     "T reasons": true_reasons,
                     "F reasons": false_reasons,
                     "Unknown reasons": unknown_reasons
-                }
+                }, tokens
             else: judge_cnt += 1
 
         return {
@@ -308,11 +328,15 @@ class StaticAnalysisWarningsConfirmation:
             "T reasons": true_reasons,
             "F reasons": false_reasons,
             "Unknown reasons": unknown_reasons
-        }
+        }, tokens
 
     
 
     async def start(self):
+
+        start_time = datetime.now()
+
+        tokens = {"input": 0, "output": 0}
 
         # get prompt for the first agent to generate the conditions
         generate_prompt ='The result of the static analyzer:\n' + self.sar
@@ -323,7 +347,9 @@ class StaticAnalysisWarningsConfirmation:
 
         while condition_retry <= CONDITION_GENERATE_RETRY_TIMES:
             # generate conditions
-            conditions_json = await self.generate_conditions(generate_prompt)
+            conditions_json, gen_tokens = await self.generate_conditions(generate_prompt)
+            tokens["input"] += gen_tokens["input_tokens"]
+            tokens["output"] += gen_tokens["output_tokens"]
             # check if conditions generate failed
             if "result" in conditions_json:
                 if conditions_json["result"] == "failed":
@@ -370,9 +396,14 @@ class StaticAnalysisWarningsConfirmation:
         result_ptr = 0
         warning = conditions_json['Warning information']
         warning_result = {}
+        judge_tokens = []
         for index_condition, c in enumerate(warning["Confirmation conditions"]):
-            warning_result[str(index_condition+1)] = llm_results[result_ptr]
+            warning_result[str(index_condition+1)] = llm_results[result_ptr][0]
+            judge_tokens.append(llm_results[result_ptr][1])
             result_ptr += 1
+        for judge_t in judge_tokens:
+            tokens["input"] += judge_t["input_tokens"]
+            tokens["output"] += judge_t["output_tokens"]
 
         print_client_log('Results for conditions', f"conditions:\n{str(conditions_json)}\nresults:\n{str(warning_result)}", self.log_path)
 
@@ -388,7 +419,14 @@ class StaticAnalysisWarningsConfirmation:
  
         print_client_log('Final results', str(final_result), self.log_path)
 
-        write_result(f"\nFinal results: {final_result}\n", self.result_path)
-        write_result(f"\nCondition judgment: {json.dumps(warning_result, indent=4)}\n", self.result_path)
+        write_result(f"\nCondition judgment: {json.dumps(warning_result, indent=4)}\n\nTokens:\n{json.dumps(judge_tokens, indent=4)}\n", self.result_path)
 
-        return final_result
+        write_result(f"\nFinal results: {final_result}\n", self.result_path)
+        write_result(f"\nTokens: {tokens}\n", self.result_path)
+
+        end_time = datetime.now()
+        time_consume = str(end_time - start_time)
+
+        write_result(f"\nTime: {time_consume}\n", self.result_path)
+ 
+        return final_result, tokens, time_consume
