@@ -151,10 +151,11 @@ def confirm_project(
         raise ValueError("Fail to build database")
 
     statistics_path = os.path.join(res_path, "statistics.jsonl")
-    
-    with open(statistics_path, "w") as f:
-        f.write("")
-    f.close()
+
+    if not os.path.exists(statistics_path):
+        with open(statistics_path, "w") as f:
+            f.write("")
+        f.close()
 
     with open(statistics_path, "a") as f:
 
