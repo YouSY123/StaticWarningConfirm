@@ -4,14 +4,16 @@ from codequery_tools import build_codequery_db
 from datetime import datetime
 import os
 import json
+from concurrent.futures import ThreadPoolExecutor
 
-# confirm one warning in a project
-def confirm(
+# validate one warning in a project
+def validate(
     project_dir: str, 
     static_analysis_result: str, 
     res_path: str, 
     database_path: str, 
-    try_times: int
+    try_times: int,
+    max_parallel: int,
 ):
     
     build_result = build_codequery_db(
@@ -22,20 +24,16 @@ def confirm(
     if build_result == "Fail":
         raise ValueError("Fail to build database")
 
-    results = {}
-    tokens = {}
-    time = {}
-    vote = {
-        "T": 0,
-        "F": 0,
-        "U": 0
-    }
+    if try_times <= 0:
+        raise ValueError("try_times must be greater than 0")
 
-    for t in range(try_times):
+    if max_parallel <= 0:
+        raise ValueError("max_parallel must be greater than 0")
+
+    def run_one(t: int):
 
         result_path=os.path.join(res_path, f"try_{t+1}")
-        if not os.path.exists(result_path):
-            os.makedirs(result_path)
+        os.makedirs(result_path, exist_ok=True)
 
         confirmator = StaticAnalysisWarningsConfirmation(
             root_dir=project_dir,
@@ -44,11 +42,31 @@ def confirm(
             database_path=database_path
         )
 
-        result0, token0, time0 = asyncio.run(confirmator.start())
-        results[f"try_{t+1}"] = result0
-        tokens[f"try_{t+1}"] = token0
-        time[f"try_{t+1}"] = time0
+        return asyncio.run(confirmator.start())
 
+    with ThreadPoolExecutor(max_workers=max_parallel) as executor:
+        futures = [
+            executor.submit(run_one, t)
+            for t in range(try_times)
+        ]
+
+        results = {}
+        tokens = {}
+        time = {}
+
+        for t, future in enumerate(futures):
+            result0, token0, time0 = future.result()
+            results[f"try_{t+1}"] = result0
+            tokens[f"try_{t+1}"] = token0
+            time[f"try_{t+1}"] = time0
+
+    vote = {
+        "T": 0,
+        "F": 0,
+        "U": 0
+    }
+
+    for result0 in results.values():
         if result0 == "True positive":
             vote["T"] += 1
         elif result0 == "False positive":
@@ -56,22 +74,24 @@ def confirm(
         else:
             vote["U"] += 1
 
-        if vote["T"] > try_times/2 :
-            final = "True positive"
-        elif vote["F"] > try_times/2 :
-            final = "False positive"
-        else:
-            final = "Unknown"
+    if vote["T"] > try_times/2 :
+        final = "True positive"
+    elif vote["F"] > try_times/2 :
+        final = "False positive"
+    else:
+        final = "Unknown"
 
     return final, results, tokens, time
 
 
-def confirm_without_building_database(
+# validate one warning in a project, without building CodeQuery database
+def validate_without_build_database(
     project_dir: str, 
     static_analysis_result: str, 
     res_path: str, 
     database_path: str, 
-    try_times: int
+    try_times: int,
+    max_parallel: int,
 ):
     
     # build_result = build_codequery_db(
@@ -80,22 +100,18 @@ def confirm_without_building_database(
     # )
 
     # if build_result == "Fail":
-    #     return "build database fail"
+    #     raise ValueError("Fail to build database")
 
-    results = {}
-    tokens = {}
-    time = {}
-    vote = {
-        "T": 0,
-        "F": 0,
-        "U": 0
-    }
+    if try_times <= 0:
+        raise ValueError("try_times must be greater than 0")
 
-    for t in range(try_times):
+    if max_parallel <= 0:
+        raise ValueError("max_parallel must be greater than 0")
+
+    def run_one(t: int):
 
         result_path=os.path.join(res_path, f"try_{t+1}")
-        if not os.path.exists(result_path):
-            os.makedirs(result_path)
+        os.makedirs(result_path, exist_ok=True)
 
         confirmator = StaticAnalysisWarningsConfirmation(
             root_dir=project_dir,
@@ -104,11 +120,31 @@ def confirm_without_building_database(
             database_path=database_path
         )
 
-        result0, token0, time0 = asyncio.run(confirmator.start())
-        results[f"try_{t+1}"] = result0
-        tokens[f"try_{t+1}"] = token0
-        time[f"try_{t+1}"] = time0
+        return asyncio.run(confirmator.start())
 
+    with ThreadPoolExecutor(max_workers=max_parallel) as executor:
+        futures = [
+            executor.submit(run_one, t)
+            for t in range(try_times)
+        ]
+
+        results = {}
+        tokens = {}
+        time = {}
+
+        for t, future in enumerate(futures):
+            result0, token0, time0 = future.result()
+            results[f"try_{t+1}"] = result0
+            tokens[f"try_{t+1}"] = token0
+            time[f"try_{t+1}"] = time0
+
+    vote = {
+        "T": 0,
+        "F": 0,
+        "U": 0
+    }
+
+    for result0 in results.values():
         if result0 == "True positive":
             vote["T"] += 1
         elif result0 == "False positive":
@@ -116,27 +152,27 @@ def confirm_without_building_database(
         else:
             vote["U"] += 1
 
-        if vote["T"] > try_times/2 :
-            final = "True positive"
-        elif vote["F"] > try_times/2 :
-            final = "False positive"
-        else:
-            final = "Unknown"
+    if vote["T"] > try_times/2 :
+        final = "True positive"
+    elif vote["F"] > try_times/2 :
+        final = "False positive"
+    else:
+        final = "Unknown"
 
     return final, results, tokens, time
 
 
+# validate a list of warnings in a project, with database builded only once
 
-# confirm a list of warnings in a project, with database builded only once
-
-def confirm_project(
+def validate_project(
     project_dir: str, 
     project_name: str, 
     warning_name_list: list[str],
     static_analysis_result_list: list[str], 
     res_path: str,
     database_path: str, 
-    try_times: int
+    try_times: int,
+    max_parallel: int,
 ):
 
     if len(warning_name_list) != len(static_analysis_result_list):
@@ -163,12 +199,13 @@ def confirm_project(
 
             cur_res_path = os.path.join(res_path, "details", warning_name_list[idx])
 
-            final, results, tokens, time = confirm_without_building_database(
+            final, results, tokens, time = validate_without_build_database(
                 project_dir=project_dir,
                 static_analysis_result=sar,
                 res_path=cur_res_path, 
                 database_path=database_path,
-                try_times=try_times
+                try_times=try_times,
+                max_parallel=max_parallel
             )
 
             result_json = {
