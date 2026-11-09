@@ -132,7 +132,9 @@ When using tools, make every effort to group all necessary tool calls into one i
 
 If you are sure that the condition is true, output T and give an explanation to prove it. For example, if the condition is "Exist an execution path ...", you should give the path.
 If you are sure that the condition is false, output F and give an explanation to prove it. For example, if the condition is "The two pointers point to the same memory", you should find evidence that they point to different memory.
-If you are not sure about the condition, feel free to output Unknown and give your reasons and what you need to judge it.
+If you cannot give an answer due to missing key information in source code, feel free to output Unknown and give the reason.
+Do not speculate about hypothetical scenarios or consider possibilities that are not supported by the source code. Since proving that something cannot happen is difficult, when you are trying to prove that a statement is impossible, if all cases found by provided tools do not prove the statement, then claim the statement to be false. 
+For example, when determining whether a function parameter could be a null pointer, if none of the function's callers in the source code can pass a null pointer, and the function is not a public API that allows users to provide custom arguments, then the possibility of that parameter being null must be considered invalid. 
 
 Something you need to pay attention to when inspecting the source code:
 (1) Some warnings seem to occur in one function, but they can be caused by repeated calls of the function. You should take this into consideration.
@@ -212,6 +214,12 @@ If you find that the judgment is incorrect, output result and explanation in JSO
 Something you need to pay attention to:
 Some conditions may be in the following form: (If)..., the warning is false positive. If the judger thinks the condition is true, meaning the warning is false positive, it will output result F. If you encounter such a situation, output correct.
 --------------------
+
+********************
+Important:
+Do not speculate about hypothetical scenarios or consider possibilities that are not supported by the source code. Since proving that something cannot happen is difficult, when the judger is trying to prove that a statement is impossible, if all cases found by provided tools do not prove the statement, then the judger will claim the statement to be false. In this case, the judgement is correct. 
+For example, when determining whether a function parameter could be a null pointer, if none of the function's callers in the source code can pass a null pointer, and the function is not a public API that allows users to provide custom arguments, then the possibility of that parameter being null must be considered invalid. If the judger claims the pointer to be non-null by inspecting all callers returned by the tools, the judgement is correct.
+********************
 
 Do not output anything else. You should point out what is wrong and how to improve in the explanation. If result is correct, explanation is not needed.
 
